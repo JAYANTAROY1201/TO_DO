@@ -8,6 +8,7 @@ import javax.mail.MessagingException;
  * @version 1.0
  * @since 16/07/18
  */
+
 public interface MailService {
 	/**
 	 * This method will send mail

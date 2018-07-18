@@ -1,4 +1,4 @@
-package com.todo.userservice.utility;
+package com.todo.utility;
 
 
 import javax.mail.MessagingException;

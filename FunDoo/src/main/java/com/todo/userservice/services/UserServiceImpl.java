@@ -13,7 +13,7 @@ import com.todo.exception.SignupException;
 import com.todo.userservice.dao.GeneralMongoRepository;
 import com.todo.userservice.dao.MailService;
 import com.todo.userservice.model.User;
-import com.todo.userservice.utility.JwtTokenBuilder;
+import com.todo.utility.JwtTokenBuilder;
 
 import io.jsonwebtoken.Claims;
 
@@ -66,7 +66,7 @@ public class UserServiceImpl {
 	 * @return
 	 * @throws LoginException
 	 */
-	public void doLogIn(String email, String password) throws LoginException {
+	public String doLogIn(String email, String password) throws LoginException {
 		if (email.equals("")) {
 			throw new LoginException("Email can't be null");
 		}
@@ -85,6 +85,10 @@ public class UserServiceImpl {
 			User user = new User();
 			user = gm.findByEmail(email).get();
 			user.toString();
+			JwtTokenBuilder jwt=new JwtTokenBuilder();
+			return jwt.createJWT(user);
+			 
+			
 
 		}
 
@@ -99,7 +103,7 @@ public class UserServiceImpl {
 	 */
 	public void sendActivationLink(String to,String jwt) throws MessagingException {
 		
-		String body = "Click here to activate your account:\n\n" + host+"/fundoo/activateaccount/?"+jwt;
+		String body = "Click here to activate your account:\n\n" + host+"/fundoo/user/activateaccount/?"+jwt;
 		mailService.sendMail(to,"Email Activation Link",body);
 	}
 //public void sendActiveLink(String to,String subject,String body)
@@ -137,7 +141,7 @@ public class UserServiceImpl {
 			throw new LoginException("Email not exist");
 		}	
 		String body="Copy the below link to postman and reset your password:\n\n"
-				+ host+"/fundoo/resetpassword/?" + jb.createJWT(gm.findByEmail(email).get());
+				+ host+"/fundoo/user/resetpassword/?" + jb.createJWT(gm.findByEmail(email).get());
 		mailService.sendMail(email,"Password reset mail",body);
 	}
 
