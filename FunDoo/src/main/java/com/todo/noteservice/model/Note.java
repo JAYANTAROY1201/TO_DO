@@ -22,6 +22,12 @@ public class Note implements Serializable {
 	private String title;
 	private String description;
 	
+	private String archive;
+	
+	private String label;
+		
+	private String pinned;
+	
 	@ApiModelProperty(hidden=true)	
 	private String dateOfCreation;
 	
@@ -80,9 +86,38 @@ public class Note implements Serializable {
 		this.lastDateOfModified = lastDateOfModified;
 	}
 
+	public String getArchive() {
+		return archive;
+	}
+
+	public void setArchive(String archive) {
+		this.archive = archive;
+	}
+
+	public String getLabel() {
+		return label;
+	}
+
+	public void setLabel(String label) {
+		this.label = label;
+	}
+
+	public String getPinned() {
+		return pinned;
+	}
+
+	public void setPinned(String pinned) {
+		this.pinned = pinned;
+	}
+
 	@Override
 	public String toString() {
 		return "Note [_id=" + _id + ", authorId=" + authorId + ", title=" + title + ", description=" + description
-				+ ", dateOfCreation=" + dateOfCreation + ", lastDateOfModified=" + lastDateOfModified + "]";
+				+ ", archive=" + archive + ", label=" + label + ", pinned=" + pinned + ", dateOfCreation="
+				+ dateOfCreation + ", lastDateOfModified=" + lastDateOfModified + "]";
 	}
+
+	
+
+	
 }

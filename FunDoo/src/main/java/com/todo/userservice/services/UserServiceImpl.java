@@ -14,6 +14,7 @@ import com.todo.userservice.dao.GeneralMongoRepository;
 import com.todo.userservice.dao.MailService;
 import com.todo.userservice.model.User;
 import com.todo.utility.JwtTokenBuilder;
+import com.todo.utility.RabbitMQSender;
 
 import io.jsonwebtoken.Claims;
 
@@ -28,6 +29,8 @@ import io.jsonwebtoken.Claims;
 public class UserServiceImpl {
 	@Autowired
 	private GeneralMongoRepository gm;
+	@Autowired
+	RabbitMQSender rabbitSender;
 	@Autowired
 	PasswordEncoder passwordencoder;
 	@Autowired
@@ -104,7 +107,7 @@ public class UserServiceImpl {
 	public void sendActivationLink(String to,String jwt) throws MessagingException {
 		
 		String body = "Click here to activate your account:\n\n" + host+"/fundoo/user/activateaccount/?"+jwt;
-		mailService.sendMail(to,"Email Activation Link",body);
+		rabbitSender.send(to,"Email Activation Link",body);
 	}
 //public void sendActiveLink(String to,String subject,String body)
 //{
