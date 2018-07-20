@@ -7,7 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.todo.userservice.model.Mail;
-@Service
+
+//@Service
 public class RabbitMQReceiver {
 
 	@Autowired

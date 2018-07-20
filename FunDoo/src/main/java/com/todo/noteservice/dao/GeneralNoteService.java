@@ -3,6 +3,7 @@ package com.todo.noteservice.dao;
 import java.util.List;
 
 import com.todo.exception.NoteReaderException;
+import com.todo.noteservice.model.Label;
 import com.todo.noteservice.model.Note;
 
 /**
@@ -13,7 +14,7 @@ import com.todo.noteservice.model.Note;
  */
 public interface GeneralNoteService {
 	public void doCreateNote(String title, String description, String authorId,
-			String archive,String label,String pinned);
+			String archive,List<Label>label,String pinned);
 
 	public List<Note> doOpenInbox(String userId) throws NoteReaderException;
 

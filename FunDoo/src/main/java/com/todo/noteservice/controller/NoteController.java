@@ -48,7 +48,7 @@ public class NoteController {
 
 		try {
 			noteService.doCreateNote(note.getTitle(), note.getDescription(), JwtTokenBuilder.parseJWT(jwt).getId(),
-					note.getArchive(), note.getLabel(), note.getPinned());
+					note.getArchive(),note.getLabel(), note.getPinned());
 		} catch (Exception e) {
 
 			return new ResponseEntity<String>(e + "", HttpStatus.BAD_REQUEST);

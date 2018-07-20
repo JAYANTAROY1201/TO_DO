@@ -1,5 +1,4 @@
 package com.todo.noteservice.model;
-
 import java.io.Serializable;
 import java.util.List;
 
@@ -18,7 +17,7 @@ import io.swagger.annotations.ApiModelProperty;
  */
 
 @Document(collection = "note")
-public class Note implements Serializable {
+public class NoteInLabel implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 	@Id
@@ -30,6 +29,7 @@ public class Note implements Serializable {
 	private String description;
 
 	private String archive;
+	@ApiModelProperty(hidden = true)
 	//@DBRef
 	@Field("label")
 	private List<Label> label;
@@ -43,7 +43,7 @@ public class Note implements Serializable {
 
 	private String lastDateOfModified;
 
-	public Note() {
+	public NoteInLabel() {
 	}
 
 	public String get_id() {
