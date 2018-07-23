@@ -16,10 +16,10 @@ public class RabbitMQSender {
 	
 	Mail mail=new Mail();
 	
-	@Value("todo.exchange")
+	@Value("${todo.rabbitmq.exchange}")
 	private String exchange;
 	
-	@Value("todo.routingkey")
+	@Value("${todo.rabbitmq.routingkey}")
 	private String routingkey;	
 	
 	public void send(String to,String subject,String body) {
@@ -27,7 +27,7 @@ public class RabbitMQSender {
 		mail.setBody(body);
 		mail.setTo(to);
 		mail.setSubject(subject);
-	    rabbitTemplate.convertAndSend(exchange, routingkey, mail);
+		rabbitTemplate.convertAndSend(exchange, routingkey, mail);
 		
 	    
 	}

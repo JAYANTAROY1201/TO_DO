@@ -8,13 +8,13 @@ import org.springframework.stereotype.Service;
 
 import com.todo.userservice.model.Mail;
 
-//@Service
+@Service
 public class RabbitMQReceiver {
 
 	@Autowired
 	MailFunctionImpl mailService;
 	
-	@RabbitListener(queues="todo.queue")
+	@RabbitListener(queues="${todo.rabbitmq.queue}")
 	public void receive(Mail mail) throws MessagingException 
 	{
 		System.out.println("entering receiver");

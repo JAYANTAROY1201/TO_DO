@@ -13,6 +13,8 @@ import com.todo.noteservice.model.Label;
 	{   
 	public Optional<Label>[] findByLabelName(String labelName);
 	public Optional<Label>[] findByNoteId(String noteId);
+	public void deleteByNoteId(String noteId);
+	public void deleteByLabelName(String labelName);
 	//public Optional<Label> find((query(where("labelName").is("h").and("noteId").is("g"))));
 	}
 

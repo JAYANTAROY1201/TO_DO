@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.todo.exception.NoteReaderException;
 import com.todo.noteservice.model.Note;
+import com.todo.noteservice.model.NoteInLabel;
 import com.todo.noteservice.services.NoteServiceImpl;
 import com.todo.userservice.controller.UserController;
 import com.todo.utility.JwtTokenBuilder;
@@ -43,7 +45,7 @@ public class NoteController {
 	 * @return
 	 */
 	@RequestMapping(value = "/createnote", method = RequestMethod.POST)
-	public ResponseEntity<String> createNote(@RequestBody Note note, @RequestParam String jwt) {
+	public ResponseEntity<String> createNote(@RequestBody Note note, @RequestHeader(value="jwt") String jwt) {
 		logger.info("Create note method starts");
 
 		try {
@@ -64,7 +66,7 @@ public class NoteController {
 	 * @return
 	 */
 	@RequestMapping(value = "/openinbox", method = RequestMethod.POST)
-	public ResponseEntity<String> openInbox(@RequestParam String jwt) {
+	public ResponseEntity<String> openInbox(@RequestHeader(value="jwt") String jwt) {
 		logger.info("Read note method starts");
 		List<Note> notes = new ArrayList<>();
 		try {
@@ -82,7 +84,7 @@ public class NoteController {
 	 * @return
 	 */
 	@RequestMapping(value = "/openarchive", method = RequestMethod.POST)
-	public ResponseEntity<String> openArchive(@RequestParam String jwt) {
+	public ResponseEntity<String> openArchive(@RequestHeader(value="jwt") String jwt) {
 		logger.info("Read note method starts");
 		List<Note> notes = new ArrayList<>();
 		try {
@@ -102,7 +104,7 @@ public class NoteController {
 	 * @return
 	 */
 	@RequestMapping(value = "/opennote", method = RequestMethod.POST)
-	public ResponseEntity<String> openNote(@RequestParam String jwt, @RequestParam String noteId) {
+	public ResponseEntity<String> openNote(@RequestHeader(value="jwt") String jwt, @RequestParam String noteId) {
 		logger.info("open note method starts");
 		List<Note> notes = new ArrayList<>();
 		try {
@@ -127,7 +129,7 @@ public class NoteController {
 	 * @throws NoteReaderException
 	 */
 	@RequestMapping(value = "/updatenotes", method = RequestMethod.POST)
-	public ResponseEntity<String> updateNote(@RequestParam String jwt, @RequestParam String noteId,
+	public ResponseEntity<String> updateNote(@RequestHeader(value="jwt") String jwt, @RequestParam String noteId,
 			@RequestBody Note note) throws NoteReaderException {
 		logger.info("Update note method starts");
 
@@ -151,7 +153,7 @@ public class NoteController {
 	 * @throws NoteReaderException
 	 */
 	@RequestMapping(value = "/deletenotes", method = RequestMethod.POST)
-	public ResponseEntity<String> deleteNote(@RequestParam String jwt, @RequestParam String noteId)
+	public ResponseEntity<String> deleteNote(@RequestHeader(value="jwt") String jwt, @RequestParam String noteId)
 			throws NoteReaderException {
 		logger.info("Deleting note method starts");
 
@@ -172,7 +174,7 @@ public class NoteController {
 	 * @throws NoteReaderException
 	 */
 	@RequestMapping(value = "/archivenotes", method = RequestMethod.POST)
-	public ResponseEntity<String> archiveNote(@RequestParam String jwt, @RequestParam String noteId)
+	public ResponseEntity<String> archiveNote(@RequestHeader(value="jwt") String jwt, @RequestParam String noteId)
 			throws NoteReaderException {
 		logger.info("Archive note method starts");
 
@@ -193,7 +195,7 @@ public class NoteController {
 	 * @throws NoteReaderException
 	 */
 	@RequestMapping(value = "/unarchivenotes", method = RequestMethod.POST)
-	public ResponseEntity<String> unArchiveNote(@RequestParam String jwt, @RequestParam String noteId)
+	public ResponseEntity<String> unArchiveNote(@RequestHeader(value="jwt") String jwt, @RequestParam String noteId)
 			throws NoteReaderException {
 		logger.info("Archive note method starts");
 
@@ -214,7 +216,7 @@ public class NoteController {
 	 * @throws NoteReaderException
 	 */
 	@RequestMapping(value = "/pinnednotes", method = RequestMethod.POST)
-	public ResponseEntity<String> pinnedNote(@RequestParam String jwt, @RequestParam String noteId)
+	public ResponseEntity<String> pinnedNote(@RequestHeader(value="jwt") String jwt, @RequestParam String noteId)
 			throws NoteReaderException {
 		logger.info("Pinned note method starts");
 
@@ -235,9 +237,9 @@ public class NoteController {
 	 * @throws NoteReaderException
 	 */
 	@RequestMapping(value = "/unpinnednotes", method = RequestMethod.POST)
-	public ResponseEntity<String> unPinnedNote(@RequestParam String jwt, @RequestParam String noteId)
+	public ResponseEntity<String> unPinnedNote(@RequestHeader(value="jwt") String jwt, @RequestParam String noteId)
 			throws NoteReaderException {
-		logger.info("Pinned note method starts");
+		logger.info("Uninned note method starts");
 
 		try {
 			noteService.doUnPinned(JwtTokenBuilder.parseJWT(jwt).getId(), noteId);
@@ -245,8 +247,69 @@ public class NoteController {
 		} catch (Exception e) {
 			return new ResponseEntity<String>(e + "", HttpStatus.BAD_REQUEST);
 		}
-		logger.info("Note Archived successfully");
+		logger.info("Note unpinned successfully");
+		return new ResponseEntity<String>("Note unpinned successfully" + "", HttpStatus.OK);
+	}
+	
+	
+	/**
+	 * @param jwt
+	 * @param labelName
+	 * @param noteLabel
+	 * @return
+	 * @throws NoteReaderException
+	 */
+	@RequestMapping(value = "/addnotetolabel", method = RequestMethod.POST)
+	public ResponseEntity<String> addNoteToLabel(@RequestHeader(value="jwt") String jwt, @RequestParam String labelName,@RequestBody NoteInLabel noteLabel  )
+			throws NoteReaderException {
+		logger.info("adding note method starts");
+
+		try {
+			noteService.addNoteToLabel(JwtTokenBuilder.parseJWT(jwt).getId(),labelName,noteLabel);
+
+		} catch (Exception e) {
+			return new ResponseEntity<String>(e + "", HttpStatus.BAD_REQUEST);
+		}
+		logger.info("Note added successfully");
 		return new ResponseEntity<String>("Note pinned successfully" + "", HttpStatus.OK);
 	}
+	
+	
+	/**
+	 * @param jwt
+	 * @param labelName
+	 * @param noteId
+	 * @return
+	 * @throws NoteReaderException
+	 */
+	@RequestMapping(value = "/setlabel", method = RequestMethod.POST)
+	public ResponseEntity<String> setLabelToExistingNote(@RequestHeader(value="jwt") String jwt, @RequestParam String labelName,@RequestParam String noteId)
+			throws NoteReaderException {
+		logger.info("adding label method starts");
 
+		try {
+			noteService.doSetLabel(JwtTokenBuilder.parseJWT(jwt).getId(),noteId,labelName);
+
+		} catch (Exception e) {
+			return new ResponseEntity<String>(e + "", HttpStatus.BAD_REQUEST);
+		}
+		logger.info("adding label method ends");
+		return new ResponseEntity<String>("Note labelled successfully" + "", HttpStatus.OK);
+	}
+	
+	
+	@RequestMapping(value = "/setreminder", method = RequestMethod.POST)
+	public ResponseEntity<String> setReminder(@RequestHeader(value="jwt") String jwt, @RequestParam String dateAndTime,@RequestParam String noteId)
+			throws NoteReaderException {
+		logger.info("setting timer method starts");
+
+		try {
+			noteService.doSetReminder(JwtTokenBuilder.parseJWT(jwt).getId(), noteId, dateAndTime);
+		} catch (Exception e) {
+			return new ResponseEntity<String>(e + "", HttpStatus.BAD_REQUEST);
+		}
+		logger.info("Note reminder added successfully");
+		return new ResponseEntity<String>("Note reminder added successfully" + "", HttpStatus.OK);
+	}
+	
 }
