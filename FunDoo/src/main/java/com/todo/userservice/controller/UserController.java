@@ -7,6 +7,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -18,17 +19,31 @@ import org.springframework.web.bind.annotation.RestController;
 import com.todo.exception.AccountActivationException;
 import com.todo.exception.LoginException;
 import com.todo.exception.SignupException;
+
 import com.todo.userservice.model.User;
 import com.todo.userservice.services.UserServiceImpl;
 import com.todo.utility.JwtTokenBuilder;
 
+
+
+
+/**
+ * <p>
+ * Purpose: This class is designed to control functionality of user
+ * </p>
+ * <br>
+ * 
+ * @author JAYANTA ROY
+ * @version 1.0
+ * @since 10/07/18
+ */
 @RestController
 @RequestMapping("/fundoo/user")
 public class UserController {
 	public static final Logger logger = LoggerFactory.getLogger(UserController.class);
 
 	@Autowired
-	UserServiceImpl userService = new UserServiceImpl();
+	UserServiceImpl userService;
 
 	/**
 	 * Method to control signup service
@@ -39,39 +54,36 @@ public class UserController {
 	 * @throws MessagingException
 	 */
 	@RequestMapping(value = "/signup", method = RequestMethod.POST)
-	public ResponseEntity<String> signUp(@RequestBody User user) {
-		try {
-			userService.doSignUp(user);
-		} catch (Exception e) {
-			return new ResponseEntity<String>(e + "", HttpStatus.BAD_REQUEST);
-		}
+	public ResponseEntity<String> signUp(@RequestBody User user) throws SignupException, MessagingException {
+
+		userService.doSignUp(user);
+
 		logger.info("Employee registered with : {}", user.getEmail());
 		String message = "Sign Up Successful";
 		JwtTokenBuilder jwt = new JwtTokenBuilder();
-		try {
-			userService.sendActivationLink(user.getEmail(), jwt.createJWT(user));
-		} catch (Exception e) {
-			return new ResponseEntity<String>(e + "", HttpStatus.BAD_REQUEST);
-		}
+
+		userService.sendActivationLink(user.getEmail(), jwt.createJWT(user));
+
 		logger.info("Activation link sent to email");
 		return new ResponseEntity<String>(message, HttpStatus.OK);
 	}
 
 	/**
-	 * @param emp
+	 * @param email
+	 * @param password
+	 * @param hsr
 	 * @return
 	 * @throws LoginException
 	 */
 	@RequestMapping(value = "/login", method = RequestMethod.POST)
-	public ResponseEntity<String> logIn(@RequestParam String email, @RequestParam String password,
-			HttpServletResponse hsr) {
+	public ResponseEntity<String> logIn(@RequestParam("email") String email, @RequestParam("password") String password,
+			HttpServletResponse hsr) throws LoginException {
 		String LoginJwt;
-		try {
-			LoginJwt = userService.doLogIn(email, password);
-		} catch (LoginException e) {
-			return new ResponseEntity<String>(e + "", HttpStatus.BAD_REQUEST);
-		}
+
+		LoginJwt = userService.doLogIn(email, password);
+   
 		hsr.setHeader("jwt", LoginJwt);
+		
 		return new ResponseEntity<String>("login successful:\n", HttpStatus.OK);
 	}
 
@@ -83,13 +95,11 @@ public class UserController {
 	 * @throws AccountActivationException
 	 */
 	@RequestMapping(value = "/activateaccount", method = RequestMethod.GET)
-	public ResponseEntity<String> activateAccount(HttpServletRequest hsr) {
+	public ResponseEntity<String> activateAccount(HttpServletRequest hsr) throws AccountActivationException {
 		String token = hsr.getQueryString();
-		try {
-			userService.doActivateEmail(token);
-		} catch (AccountActivationException e) {
-			return new ResponseEntity<String>(e + "", HttpStatus.OK);
-		}
+
+		userService.doActivateEmail(token);
+
 		String message = "Account activated successfully";
 		logger.info(message);
 		return new ResponseEntity<String>(message, HttpStatus.OK);
@@ -104,13 +114,10 @@ public class UserController {
 	 * @throws MessagingException
 	 */
 	@RequestMapping(value = "/forgetpassword", method = RequestMethod.POST)
-	public ResponseEntity<String> forgetPassword(@RequestParam String email) {
+	public ResponseEntity<String> forgetPassword(@RequestParam String email) throws LoginException, MessagingException {
 
-		try {
-			userService.doSendNewPasswordLink(email);
-		} catch (LoginException | MessagingException e) {
-			return new ResponseEntity<String>(e + "", HttpStatus.BAD_REQUEST);
-		}
+		userService.doSendNewPasswordLink(email);
+
 		logger.info("New password reset link sent to email");
 		return new ResponseEntity<String>("Password sent to email", HttpStatus.OK);
 	}

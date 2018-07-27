@@ -25,6 +25,8 @@ public class MailFunctionImpl implements MailService{
 	@Autowired
 	private JavaMailSender javaMailSender;
 	
+
+	
 	/** (non-Javadoc)
 	 * @see com.todo.userservice.dao.MailService#sendMail(com.todo.userservice.model.Mail)
 	 */

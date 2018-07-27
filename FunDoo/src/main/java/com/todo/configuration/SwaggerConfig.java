@@ -8,6 +8,8 @@ import com.google.common.base.Predicate;
 import springfox.documentation.builders.ApiInfoBuilder;
 import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
+import springfox.documentation.swagger.web.ApiKeyVehicle;
+import springfox.documentation.swagger.web.SecurityConfiguration;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
 import springfox.documentation.service.ApiInfo;
 import static springfox.documentation.builders.PathSelectors.regex;
@@ -33,6 +35,11 @@ public class SwaggerConfig {
 				.contact("roy.jayanta1201@gmail.com").license("no licence")
 				.licenseUrl("roy.jayanta1201@gmail.com").version("1.0").build();
 	}
+	
+	@Bean
+    SecurityConfiguration security() {
+        return new SecurityConfiguration(null, null, null, null, "JWTToken", ApiKeyVehicle.HEADER, "JWTToken", ",");
+    }
 
 }
 

@@ -35,6 +35,15 @@ public class NoteInLabel implements Serializable {
 	private List<Label> label;
 
 	private String pinned;
+	@ApiModelProperty(hidden = true)
+    private String trash;
+	public String getTrash() {
+		return trash;
+	}
+
+	public void setTrash(String trash) {
+		this.trash = trash;
+	}
 
 	@ApiModelProperty(hidden = true)
 	private String dateOfCreation;

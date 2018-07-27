@@ -14,7 +14,7 @@ import com.todo.noteservice.model.Note;
  */
 public interface GeneralNoteService {
 	public void doCreateNote(String title, String description, String authorId,
-			String archive,List<Label>label,String pinned);
+			String archive,List<Label>label,String pinned) throws NoteReaderException;
 
 	public List<Note> doOpenInbox(String userId) throws NoteReaderException;
 

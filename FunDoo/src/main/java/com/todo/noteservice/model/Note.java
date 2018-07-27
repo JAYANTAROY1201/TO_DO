@@ -28,16 +28,24 @@ public class Note implements Serializable {
 	private String authorId;
 	private String title;
 	private String description;
-
+	@ApiModelProperty(hidden = true)
+    private String trash;
 	private String archive;
-	//@DBRef
+	private String pinned;
 	@Field("label")
 	private List<Label> label;
-
-	private String pinned;
+   // private List<Image> image;
 
 	@ApiModelProperty(hidden = true)
 	private String dateOfCreation;
+
+	public String getTrash() {
+		return trash;
+	}
+
+	public void setTrash(String trash) {
+		this.trash = trash;
+	}
 
 	@ApiModelProperty(hidden = true)
 

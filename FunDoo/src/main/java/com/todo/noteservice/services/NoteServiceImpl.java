@@ -17,9 +17,10 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.base.Preconditions;
 import com.todo.exception.NoteReaderException;
-import com.todo.noteservice.dao.GeneralMongoLabel;
+import com.todo.noteservice.dao.LabelRepository;
 import com.todo.noteservice.dao.GeneralMongoNote;
 import com.todo.noteservice.dao.GeneralNoteService;
+import com.todo.noteservice.model.Image;
 import com.todo.noteservice.model.Label;
 import com.todo.noteservice.model.Note;
 import com.todo.noteservice.model.NoteInLabel;
@@ -39,20 +40,27 @@ public class NoteServiceImpl implements GeneralNoteService {
 	
 	Timer timer;
 	@Autowired
-	GeneralMongoLabel repoLabel;
+	LabelRepository repoLabel;
 	@Autowired
 	ModelMapper mapper;
 	public static final Logger logger = LoggerFactory.getLogger(NoteServiceImpl.class);
 
 	/**
 	 * (non-Javadoc)
+	 * @throws NoteReaderException 
 	 * 
 	 * @see com.todo.noteservice.dao.GeneralNoteService#doCreateNote(java.lang.String,
 	 *      java.lang.String, java.lang.String)
 	 */
 	@Override
 	public void doCreateNote(String title, String description, String authorId, String archive, List<Label> label,
-			String pinned) {
+			String pinned) throws NoteReaderException {
+		if(title.length()==0 && description.length()==0)
+		{
+			throw new NoteReaderException("Title and description is null");
+		}
+		else
+		{
 		Note note = new Note();
 		SimpleDateFormat sdf = new SimpleDateFormat("yyMMddhhmmssMs");
 		String noteid = sdf.format(new Date());
@@ -65,9 +73,11 @@ public class NoteServiceImpl implements GeneralNoteService {
 		note.setLastDateOfModified(formatter.format(new Date()));
 		note.setArchive(archive);
 		note.setPinned(pinned);
+		note.setTrash("false");
 
 		for (int i = 0; i < label.size(); i++) {
 			label.get(i).setNoteId(noteid);
+			label.get(i).setUserId(authorId);
 			repoLabel.save(label.get(i));
 		}
 		note.setLabel(label);
@@ -78,7 +88,7 @@ public class NoteServiceImpl implements GeneralNoteService {
 		repo.save(note);
 		logger.info("note created successfully");
 	}
-
+	}
 	/**
 	 * (non-Javadoc)
 	 * 
@@ -90,13 +100,15 @@ public class NoteServiceImpl implements GeneralNoteService {
 				"No note found for this user");
 		List<Note> notes = new ArrayList<>();
 		for (Optional<Note> note : noteOptional) {
-			if (note.get().getPinned().equals("true") && (note.get().getArchive().equals("true") == false)) {
+			if (note.get().getPinned().equals("true") && (note.get().getArchive().equals("true") == false) && 
+					(note.get().getTrash().equals("false"))) {
 				logger.info(note.get().toString());
 				notes.add(note.get());
 			}
 		}
 		for (Optional<Note> note : noteOptional) {
-			if (!note.get().getPinned().equals("true") && !note.get().getArchive().equals("true")) {
+			if (!note.get().getPinned().equals("true") && !note.get().getArchive().equals("true") &&
+					(note.get().getTrash().equals("false"))) {
 				logger.info(note.get().toString());
 				notes.add(note.get());
 			}
@@ -115,7 +127,7 @@ public class NoteServiceImpl implements GeneralNoteService {
 		List<Note> notes = new ArrayList<>();
 		Optional<Note>[] noteOptional = Preconditions.checkNotNull(repo.findByAuthorId(userID), "No note found");
 		for (Optional<Note> note : noteOptional) {
-			if (note.get().getArchive().equals("true")) {
+			if (note.get().getArchive().equals("true") && note.get().getTrash().equals("false")) {
 				logger.info(note.get().toString());
 				notes.add(note.get());
 			}
@@ -136,7 +148,7 @@ public class NoteServiceImpl implements GeneralNoteService {
 		List<Note> notes = new ArrayList<>();
 		Optional<Note>[] userNotes = Preconditions.checkNotNull(repo.findByAuthorId(userID), "No note found");
 		for (int i = 0; i < userNotes.length; i++) {
-			if (userNotes[i].get().get_id().equals(noteId))
+			if (userNotes[i].get().get_id().equals(noteId) &&  userNotes[i].get().getTrash().equals("false"))
 
 			{
 				logger.info(userNotes[i].get().toString());
@@ -159,7 +171,7 @@ public class NoteServiceImpl implements GeneralNoteService {
 		Optional<Note>[] noteOptional = Preconditions.checkNotNull(repo.findByAuthorId(userId),
 				"No note saved by this user");
 		for (int i = 0; i < noteOptional.length; i++) {
-			if (noteOptional[i].get().get_id().equals(noteId)) {
+			if (noteOptional[i].get().get_id().equals(noteId) &&  noteOptional[i].get().getTrash().equals("false")) {
 				count++;
 				if (!newTitle.equals("")) {
 					noteOptional[i].get().setTitle(newTitle);
@@ -197,9 +209,10 @@ public class NoteServiceImpl implements GeneralNoteService {
 			}
 		}
 		if (count > 0) {
-			repo.deleteById(noteId);
+			repo.findById(noteId).get().setTrash("true");
+			repo.save(repo.findById(noteId).get());
 			repoLabel.deleteByNoteId(noteId);
-			logger.info("Note deleted succesfully");
+			logger.info("Note moved to trash succesfully");
 		} else {
 			logger.error("Note id not found");
 			throw new NoteReaderException("Note id not found");
@@ -219,7 +232,7 @@ public class NoteServiceImpl implements GeneralNoteService {
 				"No note saved by this user");
 
 		for (int i = 0; i < noteOptional.length; i++) {
-			if (noteOptional[i].get().get_id().equals(noteId)) {
+			if (noteOptional[i].get().get_id().equals(noteId) && noteOptional[i].get().getTrash().equals("false")) {
 				count++;
 			}
 		}
@@ -230,7 +243,7 @@ public class NoteServiceImpl implements GeneralNoteService {
 
 		else {
 			for (int i = 0; i < noteOptional.length; i++) {
-				if (noteOptional[i].get().get_id().equals(noteId)) {
+				if (noteOptional[i].get().get_id().equals(noteId) && noteOptional[i].get().getTrash().equals("false")) {
 					noteOptional[i].get().setArchive("true");
 					noteOptional[i].get().setPinned("false");
 					repo.save(noteOptional[i].get());
@@ -253,7 +266,7 @@ public class NoteServiceImpl implements GeneralNoteService {
 			throw new NoteReaderException("No note saved by this user");
 		}
 		for (int i = 0; i < noteOptional.length; i++) {
-			if (noteOptional[i].get().get_id().equals(noteId)) {
+			if (noteOptional[i].get().get_id().equals(noteId) && noteOptional[i].get().getTrash().equals("false")) {
 				count++;
 			}
 		}
@@ -264,7 +277,7 @@ public class NoteServiceImpl implements GeneralNoteService {
 
 		else {
 			for (int i = 0; i < noteOptional.length; i++) {
-				if (noteOptional[i].get().get_id().equals(noteId)) {
+				if (noteOptional[i].get().get_id().equals(noteId) && noteOptional[i].get().getTrash().equals("false")) {
 					noteOptional[i].get().setArchive("false");
 					repo.save(noteOptional[i].get());
 				}
@@ -286,7 +299,7 @@ public class NoteServiceImpl implements GeneralNoteService {
 			throw new NoteReaderException("No note saved by this user");
 		}
 		for (int i = 0; i < noteOptional.length; i++) {
-			if (noteOptional[i].get().get_id().equals(noteId)) {
+			if (noteOptional[i].get().get_id().equals(noteId) && noteOptional[i].get().getTrash().equals("false")) {
 				count++;
 			}
 		}
@@ -297,7 +310,7 @@ public class NoteServiceImpl implements GeneralNoteService {
 
 		else {
 			for (int i = 0; i < noteOptional.length; i++) {
-				if (noteOptional[i].get().get_id().equals(noteId)) {
+				if (noteOptional[i].get().get_id().equals(noteId) && noteOptional[i].get().getTrash().equals("false")) {
 					if (noteOptional[i].get().getArchive().equals("true")) {
 						logger.error("Archived note cannot be pinned");
 						throw new NoteReaderException("Archived note cannot be pinned");
@@ -322,7 +335,7 @@ public class NoteServiceImpl implements GeneralNoteService {
 			throw new NoteReaderException("No note saved by this user");
 		}
 		for (int i = 0; i < noteOptional.length; i++) {
-			if (noteOptional[i].get().get_id().equals(noteId)) {
+			if (noteOptional[i].get().get_id().equals(noteId) && noteOptional[i].get().getTrash().equals("false")) {
 				count++;
 			}
 		}
@@ -333,7 +346,7 @@ public class NoteServiceImpl implements GeneralNoteService {
 
 		else {
 			for (int i = 0; i < noteOptional.length; i++) {
-				if (noteOptional[i].get().get_id().equals(noteId)) {
+				if (noteOptional[i].get().get_id().equals(noteId) && noteOptional[i].get().getTrash().equals("false")) {
 					noteOptional[i].get().setPinned("false");
 					repo.save(noteOptional[i].get());
 				}
@@ -361,9 +374,11 @@ public class NoteServiceImpl implements GeneralNoteService {
 			note.setAuthorId(userId);
 			note.setDateOfCreation(new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(new Date()));
 			note.setLastDateOfModified(new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(new Date()));
+			note.setTrash("false");
 			Label label = new Label();
 			label.setLabelName(labelName);
 			label.setNoteId(noteid);
+			label.setUserId(userId);
 			List<Label> labelList = new ArrayList<>();
 			labelList.add(label);
 			note.setLabel(labelList);
@@ -399,6 +414,7 @@ public class NoteServiceImpl implements GeneralNoteService {
 				if (noteOptional[i].get().get_id().equals(noteId)) {
 					Label label = new Label();
 					label.setNoteId(noteId);
+					label.setUserId(userId);
 					label.setLabelName(labelName);
 					List<Label> labelList = noteOptional[i].get().getLabel();
 					labelList.add(label);
@@ -412,24 +428,66 @@ public class NoteServiceImpl implements GeneralNoteService {
 
 	}
 
+	
+	
+	/**
+	 * @param userId
+	 * @param label
+	 * @throws NoteReaderException
+	 */
+	public void doMakeLabel(String userId, Label label) throws NoteReaderException
+	{
+		if(repoLabel.findByLabelName(label.getLabelName()).isEmpty())
+		{
+			label.setUserId(userId);
+			repoLabel.save(label);
+		}
+		else {
+		throw new NoteReaderException("Label name already exist");	
+	}
+	}
+	
+	
+	/**
+	 * @param userId
+	 * @param labelName
+	 * @return
+	 */
+	public List<Note> doSearchNoteFromLabel(String userId, String labelName)
+	{
+		Preconditions.checkNotNull(repo.findByAuthorId(userId), "No user");
+		List<Label> labelList=repoLabel.findByLabelName(labelName);
+		List<Note> noteList=new ArrayList<>();
+		for(Label label:labelList)
+		{
+			noteList.add(repo.findById(label.getNoteId()).get());
+		}
+		return noteList;
+	}
+	/**
+	 * @param userId
+	 * @param noteId
+	 * @param reminderTime
+	 * @throws ParseException
+	 */
 	public void doSetReminder(String userId, String noteId, String reminderTime) throws ParseException {
+		
 		Optional<Note>[] noteOptional = Preconditions.checkNotNull(repo.findByAuthorId(userId), "No user");
-
+		
 		for (Optional<Note> note : noteOptional) {
 			if (note.get().get_id().equals(noteId)) {
-
+				
 				Date reminder = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").parse(reminderTime);
 				long timeDifference = reminder.getTime() - new Date().getTime();
 				timer = new Timer();
 				timer.schedule(new TimerTask() {
-
+					
 					@Override
 					public void run() {
-						logger.info("Reminder task:" + note.get().toString());						
+						logger.info("Reminder Task:"+note.toString());						
 					}
 				}, timeDifference);
 			}
 		}
-//		timer.cancel();
 	}
 }

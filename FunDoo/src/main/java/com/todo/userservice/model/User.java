@@ -3,6 +3,7 @@ package com.todo.userservice.model;
 import java.io.Serializable;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import io.swagger.annotations.ApiModelProperty;
 
@@ -12,10 +13,12 @@ import io.swagger.annotations.ApiModelProperty;
  * @version 1.0
  * @since 14/07/18
  */
+@Document(collection="user")
 public class User implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 	@Id
+	@ApiModelProperty(hidden = true)
 	private String _id;
 	private String userName;
 	private String email;

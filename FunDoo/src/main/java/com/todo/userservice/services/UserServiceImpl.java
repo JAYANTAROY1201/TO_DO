@@ -4,6 +4,7 @@ import java.util.Optional;
 import javax.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -12,10 +13,15 @@ import com.todo.exception.LoginException;
 import com.todo.exception.SignupException;
 import com.todo.userservice.dao.GeneralMongoRepository;
 import com.todo.userservice.dao.MailService;
+import com.todo.userservice.model.Sequence;
 import com.todo.userservice.model.User;
 import com.todo.utility.JwtTokenBuilder;
 import com.todo.utility.RabbitMQSender;
+import static org.springframework.data.mongodb.core.FindAndModifyOptions.options;
+import static org.springframework.data.mongodb.core.query.Criteria.where;
+import static org.springframework.data.mongodb.core.query.Query.query;
 
+import org.springframework.data.mongodb.core.MongoOperations;
 import io.jsonwebtoken.Claims;
 
 /**
@@ -27,6 +33,8 @@ import io.jsonwebtoken.Claims;
  */
 @Service
 public class UserServiceImpl {
+	@Autowired 
+	private MongoOperations mongo;
 	@Autowired
 	private GeneralMongoRepository gm;
 	@Autowired
@@ -35,6 +43,8 @@ public class UserServiceImpl {
 	PasswordEncoder passwordencoder;
 	@Autowired
 	MailService mailService;
+	
+	
 	@Value("${hostandport}")
 	String host;
 
@@ -53,9 +63,9 @@ public class UserServiceImpl {
 			if (userOp.isPresent()) {
 				throw new SignupException("Email already exist");
 			} else {
-
+                user.set_id(getNextSequence("sequence"));
 				user.setPassword(passwordencoder.encode(user.getPassword()));
-                user.setActivation("false");
+				user.setActivation("false");
 				gm.save(user);
 			}
 		}
@@ -88,11 +98,8 @@ public class UserServiceImpl {
 			User user = new User();
 			user = gm.findByEmail(email).get();
 			user.toString();
-			JwtTokenBuilder jwt=new JwtTokenBuilder();
+			JwtTokenBuilder jwt = new JwtTokenBuilder();
 			return jwt.createJWT(user);
-			 
-			
-
 		}
 
 	}
@@ -102,19 +109,16 @@ public class UserServiceImpl {
 	 * 
 	 * @param jwToken
 	 * @param emp
-	 * @throws MessagingException 
+	 * @throws MessagingException
 	 */
-	public void sendActivationLink(String to,String jwt) throws MessagingException {
-		
-		String body = "Click here to activate your account:\n\n" + host+"/fundoo/user/activateaccount/?"+jwt;
-		rabbitSender.send(to,"Email Activation Link",body);
+	public void sendActivationLink(String to, String jwt) throws MessagingException {
+		String body = "Click here to activate your account:\n\n" + host + "/fundoo/user/activateaccount/?" + jwt;
+		rabbitSender.send(to, "Email Activation Link", body);
 	}
-//public void sendActiveLink(String to,String subject,String body)
-//{
-//	
-//}
+
 	/**
 	 * This method is written to activate the account
+	 * 
 	 * @param jwt
 	 * @throws AccountActivationException
 	 */
@@ -136,20 +140,21 @@ public class UserServiceImpl {
 	 * @param email
 	 * @return true if mail sent successfully else false
 	 * @throws LoginException
-	 * @throws MessagingException 
+	 * @throws MessagingException
 	 */
 	public void doSendNewPasswordLink(String email) throws LoginException, MessagingException {
 		JwtTokenBuilder jb = new JwtTokenBuilder();
 		if (gm.findByEmail(email).isPresent() == false) {
 			throw new LoginException("Email not exist");
-		}	
-		String body="Copy the below link to postman and reset your password:\n\n"
-				+ host+"/fundoo/user/resetpassword/?" + jb.createJWT(gm.findByEmail(email).get());
-		mailService.sendMail(email,"Password reset mail",body);
+		}
+		String body = "Copy the below link to postman and reset your password:\n\n" + host
+				+ "/fundoo/user/resetpassword/?" + jb.createJWT(gm.findByEmail(email).get());
+		mailService.sendMail(email, "Password reset mail", body);
 	}
 
 	/**
 	 * Method to reset password
+	 * 
 	 * @param jwtToken
 	 * @param newPassword
 	 */
@@ -159,4 +164,15 @@ public class UserServiceImpl {
 		user.get().setPassword(passwordencoder.encode(newPassword));
 		gm.save(user.get());
 	}
+	
+	
+	public String getNextSequence(String seqName)
+    {
+        Sequence counter = mongo.findAndModify(
+            query(where("_id").is(seqName)),
+            new Update().inc("seq",1),
+            options().returnNew(true).upsert(true),
+            Sequence.class);
+        return counter.getSeq()+"";
+    }
 }
