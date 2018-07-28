@@ -1,15 +1,18 @@
 package com.todo.noteservice.dao;
 
+import org.springframework.stereotype.Repository;
+
 /**
  * @author jayanta roy
  *
  */
-public interface IRedisRepository {
+
+public interface IRedisRepository <String,User>{
 
 	/**
 	 * @param token
 	 */
-	void setToken(String token);
+	public void setToken(String token);
 	/**
 	 * @param userId
 	 * @return

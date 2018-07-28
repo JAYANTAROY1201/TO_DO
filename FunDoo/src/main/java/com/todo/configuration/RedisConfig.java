@@ -10,10 +10,12 @@ import com.todo.userservice.model.User;
 
 
 
+
 /**
- * @author jayanta roy
- * @since 19/07/2018
- *
+ * purpose: This class is designed to Configure Redis
+ * @author JAYANTA ROY
+ * @version 1.0
+ * @since 25/07/18
  */
 @Configuration
 @Component
@@ -22,11 +24,13 @@ public class RedisConfig {
 	 * @return jedisConFactory
 	 */
 	@SuppressWarnings("deprecation")
+	
 	@Bean
-	JedisConnectionFactory jedisConnectionFactory() {
+	public JedisConnectionFactory jedisConnectionFactory() 
+	{
 		JedisConnectionFactory jedisConFactory = new JedisConnectionFactory();
-		jedisConFactory.setHostName("localhost");
-		jedisConFactory.setPort(6379);
+//		jedisConFactory.setHostName("localhost");
+//		jedisConFactory.setPort(6379);
 		return jedisConFactory;
 	}
 
@@ -34,7 +38,8 @@ public class RedisConfig {
 	 * @return redis template
 	 */
 	@Bean
-	public RedisTemplate<String, User> redisTemplate() {
+	public RedisTemplate<String,User> redisTemplate() 
+	{
 		RedisTemplate<String, User> redisTemplate = new RedisTemplate<String, User>();
 		redisTemplate.setConnectionFactory(jedisConnectionFactory());
 		return redisTemplate;

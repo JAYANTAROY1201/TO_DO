@@ -1,4 +1,4 @@
-package com.todo.utility;
+/*package com.todo.utility;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -46,4 +46,4 @@ public class AmazonSThree {
 		client.putObject(putObjectRequest);
 	}
 
-}
+}*/

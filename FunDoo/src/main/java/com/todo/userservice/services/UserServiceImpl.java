@@ -11,12 +11,15 @@ import org.springframework.stereotype.Service;
 import com.todo.exception.AccountActivationException;
 import com.todo.exception.LoginException;
 import com.todo.exception.SignupException;
+import com.todo.noteservice.dao.IRedisRepository;
 import com.todo.userservice.dao.GeneralMongoRepository;
 import com.todo.userservice.dao.MailService;
 import com.todo.userservice.model.Sequence;
 import com.todo.userservice.model.User;
 import com.todo.utility.JwtTokenBuilder;
 import com.todo.utility.RabbitMQSender;
+import com.todo.utility.RedisRepositoryImplementation;
+
 import static org.springframework.data.mongodb.core.FindAndModifyOptions.options;
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 import static org.springframework.data.mongodb.core.query.Query.query;
@@ -43,6 +46,8 @@ public class UserServiceImpl {
 	PasswordEncoder passwordencoder;
 	@Autowired
 	MailService mailService;
+	@Autowired
+	IRedisRepository<String, User> redisImpl;
 	
 	
 	@Value("${hostandport}")
@@ -99,6 +104,7 @@ public class UserServiceImpl {
 			user = gm.findByEmail(email).get();
 			user.toString();
 			JwtTokenBuilder jwt = new JwtTokenBuilder();
+			redisImpl.setToken(jwt.createJWT(user));
 			return jwt.createJWT(user);
 		}
 

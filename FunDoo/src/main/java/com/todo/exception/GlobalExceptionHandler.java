@@ -10,10 +10,10 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import com.todo.userservice.model.ResponseBean;
 
 /**
- * <p>purpose: this class is designed to handle all exceptions</p><br>
+ * <p>purpose: This class is designed to handle all exceptions</p><br>
  * @author JAYANTA ROY
  * @version 1.0
- * @since 10/07/18
+ * @since 12/07/18
  */
 @ControllerAdvice
 public class GlobalExceptionHandler {
@@ -23,7 +23,7 @@ public class GlobalExceptionHandler {
 	/**
 	 * This method to handle Note exception
 	 * @param exception
-	 * @return
+	 * @return response entity
 	 */
 	@ExceptionHandler(NoteReaderException.class)
 	public ResponseEntity<ResponseBean> handleNoteException(NoteReaderException exception) {
@@ -35,31 +35,28 @@ public class GlobalExceptionHandler {
 	}
 
 	/**
-	 * This method handle 
+	 * This method handle login exception 
 	 * @param exception
-	 * @return
+	 * @return response entity
 	 */
 	@ExceptionHandler(LoginException.class)
 	public ResponseEntity<ResponseBean> handleLoginException(LoginException exception) {
 		logger.info("Error Occured While Registration" + exception.getMessage(), exception);
-
 		ResponseBean response = new ResponseBean();
-
 		response.setMessage(exception.getMessage());
 		response.setStatus(-2);
 		return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
 	}
 
 	/**
+	 * This method handle signup exception
 	 * @param exception
-	 * @return
+	 * @return response entity
 	 */
 	@ExceptionHandler(SignupException.class)
 	public ResponseEntity<ResponseBean> handleSignupException(SignupException exception) {
 		logger.info("Error Occured While Registration" + exception.getMessage(), exception);
-
 		ResponseBean response = new ResponseBean();
-
 		response.setMessage(exception.getMessage());
 		response.setStatus(-3);
 		return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);

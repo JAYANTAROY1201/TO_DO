@@ -25,18 +25,19 @@ import com.todo.userservice.model.User;
  *
  */
 @Repository
-public class RedisRepositoryImplementation implements IRedisRepository{
+public class RedisRepositoryImplementation implements IRedisRepository<String,User>{
 
-	@Autowired
-	JwtTokenBuilder tokenProvider;
+	JwtTokenBuilder tokenProvider=new JwtTokenBuilder();
 	
-	private RedisTemplate<String, User> redisTemplate;
+	private RedisTemplate<String,User> redisTemplate;
 	private static HashOperations<String, String, String> hashOperations;
 	private static String KEY = "TOKEN";
+	
 
 	@Autowired
 	public RedisRepositoryImplementation(RedisTemplate<String, User> redisTemplate) {
 		this.redisTemplate = redisTemplate;
+		hashOperations = redisTemplate.opsForHash();
 	}
 
 	private static Logger logger = LoggerFactory.getLogger(RedisRepositoryImplementation.class);
@@ -44,10 +45,10 @@ public class RedisRepositoryImplementation implements IRedisRepository{
 	/**
 	 * To initialize hash operations and this method MUST be invoked before the class is put into service.
 	 */
-	@PostConstruct
-	private void init() {
-		hashOperations = redisTemplate.opsForHash();
-	}
+//	@PostConstruct
+//	private void init() {
+//		hashOperations = redisTemplate.opsForHash();
+//	}
 
 	/**
 	 * @param clientId

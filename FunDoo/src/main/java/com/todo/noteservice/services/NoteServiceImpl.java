@@ -46,7 +46,7 @@ public class NoteServiceImpl implements GeneralNoteService {
 	public static final Logger logger = LoggerFactory.getLogger(NoteServiceImpl.class);
 
 	/**
-	 * (non-Javadoc)
+	 * this method is written to create Note
 	 * @throws NoteReaderException 
 	 * 
 	 * @see com.todo.noteservice.dao.GeneralNoteService#doCreateNote(java.lang.String,
@@ -116,7 +116,7 @@ public class NoteServiceImpl implements GeneralNoteService {
 		return notes;
 	}
 
-	/*
+	/**
 	 * (non-Javadoc)
 	 * 
 	 * @see
@@ -136,7 +136,7 @@ public class NoteServiceImpl implements GeneralNoteService {
 		return notes;
 	}
 
-	/*
+	/**
 	 * (non-Javadoc)
 	 * 
 	 * @see com.todo.noteservice.dao.GeneralNoteService#doOpenNote(java.lang.String,

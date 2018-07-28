@@ -19,10 +19,11 @@ import org.springframework.web.bind.annotation.RestController;
 import com.todo.exception.AccountActivationException;
 import com.todo.exception.LoginException;
 import com.todo.exception.SignupException;
-
+import com.todo.noteservice.dao.IRedisRepository;
 import com.todo.userservice.model.User;
 import com.todo.userservice.services.UserServiceImpl;
 import com.todo.utility.JwtTokenBuilder;
+import com.todo.utility.RedisRepositoryImplementation;
 
 
 
@@ -43,7 +44,8 @@ public class UserController {
 	public static final Logger logger = LoggerFactory.getLogger(UserController.class);
 
 	@Autowired
-	UserServiceImpl userService;
+	UserServiceImpl userService =new UserServiceImpl();
+	
 
 	/**
 	 * Method to control signup service

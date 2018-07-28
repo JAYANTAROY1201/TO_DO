@@ -38,12 +38,11 @@ public class NoteController {
 	NoteServiceImpl noteService;
 
 	/**
-	 * This method is used to create notes
-	 * 
+	 * This method is used to create notes 
 	 * @param title
 	 * @param description
 	 * @param jwt
-	 * @return
+	 * @return response entity
 	 * @throws NoteReaderException 
 	 */
 	@RequestMapping(value = "/create-note", method = RequestMethod.POST)
@@ -57,10 +56,9 @@ public class NoteController {
 	}
 
 	/**
-	 * This method is to read notes
-	 * 
+	 * This method is to open inbox 
 	 * @param jwt
-	 * @return
+	 * @return response entity
 	 * @throws NoteReaderException
 	 */
 	@RequestMapping(value = "/open-inbox", method = RequestMethod.POST)
@@ -74,8 +72,9 @@ public class NoteController {
 	}
 
 	/**
+	 * This method to open archive
 	 * @param jwt
-	 * @return
+	 * @return response entity
 	 * @throws NoteReaderException
 	 */
 	@RequestMapping(value = "/open-archive", method = RequestMethod.POST)
@@ -91,7 +90,7 @@ public class NoteController {
 	/**
 	 * @param jwt
 	 * @param noteId
-	 * @return
+	 * @return response entity
 	 * @throws NoteReaderException
 	 */
 	@RequestMapping(value = "/open-note", method = RequestMethod.POST)
@@ -112,7 +111,7 @@ public class NoteController {
 	 * @param noteId
 	 * @param newTitle
 	 * @param newDescription
-	 * @return
+	 * @return response entity
 	 * @throws NoteReaderException
 	 */
 	@RequestMapping(value = "/update-notes", method = RequestMethod.PUT)
@@ -131,7 +130,7 @@ public class NoteController {
 	 * 
 	 * @param jwt
 	 * @param noteId
-	 * @return
+	 * @return response entity
 	 * @throws NoteReaderException
 	 */
 	@RequestMapping(value = "/delete-notes", method = RequestMethod.DELETE)
@@ -148,7 +147,7 @@ public class NoteController {
 	/**
 	 * @param jwt
 	 * @param noteId
-	 * @return
+	 * @return response entity
 	 * @throws NoteReaderException
 	 */
 	@RequestMapping(value = "/archive-notes", method = RequestMethod.POST)
@@ -165,7 +164,7 @@ public class NoteController {
 	/**
 	 * @param jwt
 	 * @param noteId
-	 * @return
+	 * @return response entity
 	 * @throws NoteReaderException
 	 */
 	@RequestMapping(value = "/unarchive-notes", method = RequestMethod.POST)
@@ -182,7 +181,7 @@ public class NoteController {
 	/**
 	 * @param jwt
 	 * @param noteId
-	 * @return
+	 * @return response entity
 	 * @throws NoteReaderException
 	 */
 	@RequestMapping(value = "/pinned-notes", method = RequestMethod.POST)
@@ -199,7 +198,7 @@ public class NoteController {
 	/**
 	 * @param jwt
 	 * @param noteId
-	 * @return
+	 * @return response entity
 	 * @throws NoteReaderException
 	 */
 	@RequestMapping(value = "/unpinned-notes", method = RequestMethod.POST)
@@ -217,7 +216,7 @@ public class NoteController {
 	 * @param jwt
 	 * @param labelName
 	 * @param noteLabel
-	 * @return
+	 * @return response entity
 	 * @throws NoteReaderException
 	 */
 	@RequestMapping(value = "/add-note-to-label", method = RequestMethod.POST)
@@ -234,7 +233,7 @@ public class NoteController {
 	 * @param jwt
 	 * @param labelName
 	 * @param noteId
-	 * @return
+	 * @return response entity
 	 * @throws NoteReaderException
 	 */
 	@RequestMapping(value = "/set-label-into-note", method = RequestMethod.POST)
@@ -268,7 +267,7 @@ public class NoteController {
 	/**
 	 * @param jwt
 	 * @param labelName
-	 * @return
+	 * @return response entity
 	 * @throws NoteReaderException
 	 * @throws ParseException
 	 */
@@ -287,7 +286,7 @@ public class NoteController {
 	 * @param jwt
 	 * @param dateAndTime
 	 * @param noteId
-	 * @return
+	 * @return response entity
 	 * @throws NoteReaderException
 	 * @throws ParseException
 	 */

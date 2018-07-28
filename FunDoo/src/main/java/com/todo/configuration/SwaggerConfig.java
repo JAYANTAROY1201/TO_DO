@@ -14,6 +14,12 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 import springfox.documentation.service.ApiInfo;
 import static springfox.documentation.builders.PathSelectors.regex;
 
+/**
+ * purpose: This class is designed to configure swagger
+ * @author JAYANTA ROY
+ * @version 1.0
+ * @since 10/07/18
+ */
 @Configuration
 @EnableSwagger2
 public class SwaggerConfig {

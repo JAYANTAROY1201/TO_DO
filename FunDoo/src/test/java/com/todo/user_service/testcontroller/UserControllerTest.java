@@ -1,4 +1,4 @@
-package com.todo.user_service.testcontroller;
+/*package com.todo.user_service.testcontroller;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -16,12 +16,12 @@ import org.springframework.web.context.WebApplicationContext;
 
 import com.todo.FunDooApplication;
 
-/**
+*//**
  *<p> purpose: This class is designed to test login class in controller</p><br>
  * @author JAYANTA ROY
  * @version 1.0
  * @since 24/07/18
- */
+ *//*
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @ContextConfiguration(classes = FunDooApplication.class)
@@ -57,3 +57,4 @@ public class UserControllerTest {
 
 	}
 }
+*/
