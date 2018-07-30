@@ -17,7 +17,7 @@ import io.swagger.annotations.ApiModelProperty;
  */
 
 @Document(collection = "note")
-public class NoteInLabel implements Serializable {
+public class NoteInLabelDTO implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 	@Id
@@ -52,7 +52,7 @@ public class NoteInLabel implements Serializable {
 
 	private String lastDateOfModified;
 
-	public NoteInLabel() {
+	public NoteInLabelDTO() {
 	}
 
 	public String get_id() {

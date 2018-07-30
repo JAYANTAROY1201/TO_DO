@@ -19,11 +19,11 @@ import org.springframework.web.bind.annotation.RestController;
 import com.todo.exception.AccountActivationException;
 import com.todo.exception.LoginException;
 import com.todo.exception.SignupException;
-import com.todo.noteservice.dao.IRedisRepository;
+import com.todo.userservice.model.LoginDTO;
 import com.todo.userservice.model.User;
 import com.todo.userservice.services.UserServiceImpl;
 import com.todo.utility.JwtTokenBuilder;
-import com.todo.utility.RedisRepositoryImplementation;
+import com.todo.utility.Messages;
 
 
 
@@ -44,9 +44,11 @@ public class UserController {
 	public static final Logger logger = LoggerFactory.getLogger(UserController.class);
 
 	@Autowired
-	UserServiceImpl userService =new UserServiceImpl();
+	UserServiceImpl userService;
 	
-
+	@Autowired
+	Messages messages;
+	
 	/**
 	 * Method to control signup service
 	 * 
@@ -59,14 +61,14 @@ public class UserController {
 	public ResponseEntity<String> signUp(@RequestBody User user) throws SignupException, MessagingException {
 
 		userService.doSignUp(user);
-
+      System.out.println(messages.get("default.title"));
+      logger.info(messages.get("print_name"));
 		logger.info("Employee registered with : {}", user.getEmail());
 		String message = "Sign Up Successful";
 		JwtTokenBuilder jwt = new JwtTokenBuilder();
-
 		userService.sendActivationLink(user.getEmail(), jwt.createJWT(user));
-
 		logger.info("Activation link sent to email");
+		
 		return new ResponseEntity<String>(message, HttpStatus.OK);
 	}
 
@@ -78,13 +80,13 @@ public class UserController {
 	 * @throws LoginException
 	 */
 	@RequestMapping(value = "/login", method = RequestMethod.POST)
-	public ResponseEntity<String> logIn(@RequestParam("email") String email, @RequestParam("password") String password,
+	public ResponseEntity<String> logIn(@RequestBody LoginDTO loginCredentials,
 			HttpServletResponse hsr) throws LoginException {
-		String LoginJwt;
+		
 
-		LoginJwt = userService.doLogIn(email, password);
+		String JWTToken = userService.doLogIn(loginCredentials);
    
-		hsr.setHeader("jwt", LoginJwt);
+		hsr.setHeader("JWTToken",JWTToken);
 		
 		return new ResponseEntity<String>("login successful:\n", HttpStatus.OK);
 	}
@@ -140,5 +142,5 @@ public class UserController {
 		logger.info("New password set successfully");
 		return new ResponseEntity<String>("New password set successfully", HttpStatus.OK);
 	}
-
+	
 }

@@ -8,18 +8,19 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.google.common.base.Preconditions;
 import com.todo.exception.AccountActivationException;
 import com.todo.exception.LoginException;
 import com.todo.exception.SignupException;
 import com.todo.noteservice.dao.IRedisRepository;
-import com.todo.userservice.dao.GeneralMongoRepository;
-import com.todo.userservice.dao.MailService;
+import com.todo.userservice.dao.IUserRepository;
+import com.todo.userservice.dao.IMailService;
+import com.todo.userservice.model.LoginDTO;
 import com.todo.userservice.model.Sequence;
 import com.todo.userservice.model.User;
 import com.todo.utility.JwtTokenBuilder;
+import com.todo.utility.Messages;
 import com.todo.utility.RabbitMQSender;
-import com.todo.utility.RedisRepositoryImplementation;
-
 import static org.springframework.data.mongodb.core.FindAndModifyOptions.options;
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 import static org.springframework.data.mongodb.core.query.Query.query;
@@ -35,19 +36,20 @@ import io.jsonwebtoken.Claims;
  * @since 10/07/18
  */
 @Service
-public class UserServiceImpl {
+public class UserServiceImpl implements IGeneralUserService {
 	@Autowired 
 	private MongoOperations mongo;
 	@Autowired
-	private GeneralMongoRepository gm;
+	private IUserRepository gm;
 	@Autowired
 	RabbitMQSender rabbitSender;
 	@Autowired
 	PasswordEncoder passwordencoder;
 	@Autowired
-	MailService mailService;
+	IMailService mailService;
 	@Autowired
 	IRedisRepository<String, User> redisImpl;
+	
 	
 	
 	@Value("${hostandport}")
@@ -60,10 +62,13 @@ public class UserServiceImpl {
 	 * @return true if sign up successful else false
 	 * @throws SignupException
 	 */
+	@Override
 	public void doSignUp(User user) throws SignupException {
-		if (user.getEmail().equals("")) {
-			throw new SignupException("Email is null");
-		} else {
+		Preconditions.checkNotNull(user.getEmail(),"Email field is blank");
+		Preconditions.checkNotNull(user.getMobile(),"Mobile field is blank");
+		Preconditions.checkNotNull(user.getPassword(),"Password field is blank");
+		Preconditions.checkNotNull(user.getUserName(),"User name field is blank");
+		
 			Optional<User> userOp = gm.findByEmail(user.getEmail());
 			if (userOp.isPresent()) {
 				throw new SignupException("Email already exist");
@@ -73,8 +78,8 @@ public class UserServiceImpl {
 				user.setActivation("false");
 				gm.save(user);
 			}
-		}
 	}
+	
 
 	/**
 	 * This method is add functionality for login
@@ -84,25 +89,21 @@ public class UserServiceImpl {
 	 * @return
 	 * @throws LoginException
 	 */
-	public String doLogIn(String email, String password) throws LoginException {
-		if (email.equals("")) {
-			throw new LoginException("Email can't be null");
-		}
-		if (password.equals("")) {
-			throw new LoginException("Password cannot be blank");
-		}
-		if (gm.findByEmail(email).isPresent() == false) {
+	@Override
+	public String doLogIn(LoginDTO loginCredentials) throws LoginException {	
+		Preconditions.checkNotNull(loginCredentials.getEmail(),"Email can't be null");
+		Preconditions.checkNotNull(loginCredentials.getPassword(),"Password cannot be blank");		
+		if (gm.findByEmail(loginCredentials.getEmail()).isPresent() == false) {
 			throw new LoginException("Email not found");
 		}
-		if (gm.findByEmail(email).get().getActivation().equals("false")) {
+		if (gm.findByEmail(loginCredentials.getEmail()).get().getActivation().equals("false")) {
 			throw new LoginException("Account not activated");
 		}
-		if (!passwordencoder.matches(password, gm.findByEmail(email).get().getPassword())) {
+		if (!passwordencoder.matches(loginCredentials.getPassword(), gm.findByEmail(loginCredentials.getEmail()).get().getPassword())) {
 			throw new LoginException("Password not correct");
 		} else {
 			User user = new User();
-			user = gm.findByEmail(email).get();
-			user.toString();
+			user = gm.findByEmail(loginCredentials.getEmail()).get();
 			JwtTokenBuilder jwt = new JwtTokenBuilder();
 			redisImpl.setToken(jwt.createJWT(user));
 			return jwt.createJWT(user);
@@ -164,6 +165,7 @@ public class UserServiceImpl {
 	 * @param jwtToken
 	 * @param newPassword
 	 */
+	@Override
 	public void doResetPassword(String jwtToken, String newPassword) {
 		Claims claims = JwtTokenBuilder.parseJWT(jwtToken);
 		Optional<User> user = gm.findById(claims.getId());
@@ -181,4 +183,5 @@ public class UserServiceImpl {
             Sequence.class);
         return counter.getSeq()+"";
     }
+	
 }

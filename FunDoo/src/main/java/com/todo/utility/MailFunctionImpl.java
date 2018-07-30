@@ -9,7 +9,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
 
-import com.todo.userservice.dao.MailService;
+import com.todo.userservice.dao.IMailService;
 
 
 
@@ -20,7 +20,7 @@ import com.todo.userservice.dao.MailService;
  * @since 10/07/18
  */
 @Component
-public class MailFunctionImpl implements MailService{
+public class MailFunctionImpl implements IMailService{
 
 	@Autowired
 	private JavaMailSender javaMailSender;
@@ -28,7 +28,7 @@ public class MailFunctionImpl implements MailService{
 
 	
 	/** (non-Javadoc)
-	 * @see com.todo.userservice.dao.MailService#sendMail(com.todo.userservice.model.Mail)
+	 * @see com.todo.userservice.dao.IMailService#sendMail(com.todo.userservice.model.Mail)
 	 */
 	@Override
 	public void sendMail(String to,String subject,String body) throws MessagingException {

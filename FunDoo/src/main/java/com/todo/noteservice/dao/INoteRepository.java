@@ -11,7 +11,7 @@ import com.todo.noteservice.model.Note;
  * @version 1.0
  * @since 17/07/18
  */
-public interface GeneralMongoNote extends MongoRepository<Note,String>
+public interface INoteRepository extends MongoRepository<Note,String>
 {
    public Optional<Note>[] findByAuthorId(String userId);
 }

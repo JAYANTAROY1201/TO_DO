@@ -18,12 +18,10 @@ import org.springframework.stereotype.Service;
 import com.google.common.base.Preconditions;
 import com.todo.exception.NoteReaderException;
 import com.todo.noteservice.dao.LabelRepository;
-import com.todo.noteservice.dao.GeneralMongoNote;
-import com.todo.noteservice.dao.GeneralNoteService;
-import com.todo.noteservice.model.Image;
+import com.todo.noteservice.dao.INoteRepository;
 import com.todo.noteservice.model.Label;
 import com.todo.noteservice.model.Note;
-import com.todo.noteservice.model.NoteInLabel;
+import com.todo.noteservice.model.NoteInLabelDTO;
 
 
 /**
@@ -34,9 +32,9 @@ import com.todo.noteservice.model.NoteInLabel;
  * @since 17/07/18
  */
 @Service
-public class NoteServiceImpl implements GeneralNoteService {
+public class NoteServiceImpl implements IGeneralNoteService {
 	@Autowired
-	private GeneralMongoNote repo;
+	private INoteRepository repo;
 	
 	Timer timer;
 	@Autowired
@@ -49,39 +47,32 @@ public class NoteServiceImpl implements GeneralNoteService {
 	 * this method is written to create Note
 	 * @throws NoteReaderException 
 	 * 
-	 * @see com.todo.noteservice.dao.GeneralNoteService#doCreateNote(java.lang.String,
+	 * @see com.todo.noteservice.services.IGeneralNoteService#doCreateNote(java.lang.String,
 	 *      java.lang.String, java.lang.String)
 	 */
 	@Override
-	public void doCreateNote(String title, String description, String authorId, String archive, List<Label> label,
-			String pinned) throws NoteReaderException {
-		if(title.length()==0 && description.length()==0)
+	public void doCreateNote(Note note,String authorId) throws NoteReaderException {
+		if(note.getTitle().length()==0 && note.getDescription().length()==0)
 		{
 			throw new NoteReaderException("Title and description is null");
 		}
 		else
 		{
-		Note note = new Note();
 		SimpleDateFormat sdf = new SimpleDateFormat("yyMMddhhmmssMs");
 		String noteid = sdf.format(new Date());
 		note.set_id(noteid);
-		note.setAuthorId(authorId);
-		note.setTitle(title);
-		note.setDescription(description);
+		note.setAuthorId(authorId);				
 		SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
 		note.setDateOfCreation(formatter.format(new Date()));
-		note.setLastDateOfModified(formatter.format(new Date()));
-		note.setArchive(archive);
-		note.setPinned(pinned);
+		note.setLastDateOfModified(formatter.format(new Date()));		
 		note.setTrash("false");
 
-		for (int i = 0; i < label.size(); i++) {
-			label.get(i).setNoteId(noteid);
-			label.get(i).setUserId(authorId);
-			repoLabel.save(label.get(i));
+		for (int i = 0; i < note.getLabel().size(); i++) {
+			note.getLabel().get(i).setNoteId(noteid);
+			note.getLabel().get(i).setUserId(authorId);
+			repoLabel.save(note.getLabel().get(i));
 		}
-		note.setLabel(label);
-		if (archive.equals("true") && pinned.equals("true")) {
+		if (note.getArchive().equals("true") && note.getPinned().equals("true")) {
 			note.setArchive("true");
 			note.setPinned("false");
 		}
@@ -89,10 +80,11 @@ public class NoteServiceImpl implements GeneralNoteService {
 		logger.info("note created successfully");
 	}
 	}
+	
 	/**
 	 * (non-Javadoc)
 	 * 
-	 * @see com.todo.noteservice.dao.GeneralNoteService#doOpenInbox(java.lang.String)
+	 * @see com.todo.noteservice.services.IGeneralNoteService#doOpenInbox(java.lang.String)
 	 */
 	@Override
 	public List<Note> doOpenInbox(String userID) throws NoteReaderException {
@@ -120,7 +112,7 @@ public class NoteServiceImpl implements GeneralNoteService {
 	 * (non-Javadoc)
 	 * 
 	 * @see
-	 * com.todo.noteservice.dao.GeneralNoteService#doOpenArchive(java.lang.String)
+	 * com.todo.noteservice.services.IGeneralNoteService#doOpenArchive(java.lang.String)
 	 */
 	@Override
 	public List<Note> doOpenArchive(String userID) throws NoteReaderException {
@@ -139,7 +131,7 @@ public class NoteServiceImpl implements GeneralNoteService {
 	/**
 	 * (non-Javadoc)
 	 * 
-	 * @see com.todo.noteservice.dao.GeneralNoteService#doOpenNote(java.lang.String,
+	 * @see com.todo.noteservice.services.IGeneralNoteService#doOpenNote(java.lang.String,
 	 * java.lang.String)
 	 */
 	@Override
@@ -162,7 +154,7 @@ public class NoteServiceImpl implements GeneralNoteService {
 	 * (non-Javadoc)
 	 * 
 	 * @throws NoteReaderException
-	 * @see com.todo.noteservice.dao.GeneralNoteService#doUpdateNote()
+	 * @see com.todo.noteservice.services.IGeneralNoteService#doUpdateNote()
 	 */
 	@Override
 	public void doUpdateNote(String userId, String noteId, String newTitle, String newDescription)
@@ -195,7 +187,7 @@ public class NoteServiceImpl implements GeneralNoteService {
 	/**
 	 * (non-Javadoc)
 	 * 
-	 * @see com.todo.noteservice.dao.GeneralNoteService#doDeleteNote()
+	 * @see com.todo.noteservice.services.IGeneralNoteService#doDeleteNote()
 	 */
 	@Override
 	public void doDeleteNote(String userId, String noteId) throws NoteReaderException {
@@ -222,7 +214,7 @@ public class NoteServiceImpl implements GeneralNoteService {
 	/**
 	 * (non-Javadoc)
 	 * 
-	 * @see com.todo.noteservice.dao.GeneralNoteService#doArchive(java.lang.String,
+	 * @see com.todo.noteservice.services.IGeneralNoteService#doArchive(java.lang.String,
 	 *      java.lang.String)
 	 */
 	@Override
@@ -360,7 +352,7 @@ public class NoteServiceImpl implements GeneralNoteService {
 	 * @param noteLabel
 	 * @throws NoteReaderException
 	 */
-	public void addNoteToLabel(String userId, String labelName, NoteInLabel noteLabel) throws NoteReaderException {
+	public void addNoteToLabel(String userId, String labelName, NoteInLabelDTO noteLabel) throws NoteReaderException {
 		Optional<Note>[] noteOptional = repo.findByAuthorId(userId);
 		if (noteOptional.length == 0) {
 			logger.error("No note saved by this user");
