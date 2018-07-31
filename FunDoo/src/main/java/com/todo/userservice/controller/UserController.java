@@ -1,5 +1,7 @@
 package com.todo.userservice.controller;
 
+import java.net.UnknownHostException;
+
 import javax.mail.MessagingException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -25,9 +27,6 @@ import com.todo.userservice.services.UserServiceImpl;
 import com.todo.utility.JwtTokenBuilder;
 import com.todo.utility.Messages;
 
-
-
-
 /**
  * <p>
  * Purpose: This class is designed to control functionality of user
@@ -45,10 +44,10 @@ public class UserController {
 
 	@Autowired
 	UserServiceImpl userService;
-	
+
 	@Autowired
 	Messages messages;
-	
+
 	/**
 	 * Method to control signup service
 	 * 
@@ -56,17 +55,19 @@ public class UserController {
 	 * @return
 	 * @throws SignupException
 	 * @throws MessagingException
+	 * @throws UnknownHostException
 	 */
 	@RequestMapping(value = "/signup", method = RequestMethod.POST)
-	public ResponseEntity<String> signUp(@RequestBody User user) throws SignupException, MessagingException {
+	public ResponseEntity<String> signUp(@RequestBody User user)
+			throws SignupException, MessagingException, UnknownHostException {
 
-		userService.doSignUp(user);     
+		userService.doSignUp(user);
 		logger.info(messages.get("200"), user.getEmail());
-		
+
 		JwtTokenBuilder jwt = new JwtTokenBuilder();
 		userService.sendActivationLink(user.getEmail(), jwt.createJWT(user));
 		logger.info(messages.get("202"));
-		
+
 		return new ResponseEntity<String>(messages.get("201"), HttpStatus.OK);
 	}
 
@@ -78,14 +79,13 @@ public class UserController {
 	 * @throws LoginException
 	 */
 	@RequestMapping(value = "/login", method = RequestMethod.POST)
-	public ResponseEntity<String> logIn(@RequestBody LoginDTO loginCredentials,
-			HttpServletResponse hsr) throws LoginException {
-		
+	public ResponseEntity<String> logIn(@RequestBody LoginDTO loginCredentials, HttpServletResponse hsr)
+			throws LoginException {
 
 		String JWTToken = userService.doLogIn(loginCredentials);
-   
-		hsr.setHeader("JWTToken",JWTToken);
-		
+
+		hsr.setHeader("JWTToken", JWTToken);
+
 		return new ResponseEntity<String>(messages.get("203"), HttpStatus.OK);
 	}
 
@@ -140,5 +140,5 @@ public class UserController {
 		logger.info(messages.get("207"));
 		return new ResponseEntity<String>(messages.get("208"), HttpStatus.OK);
 	}
-	
+
 }

@@ -1,4 +1,5 @@
 package com.todo.noteservice.model;
+
 import java.io.Serializable;
 import java.util.List;
 
@@ -30,13 +31,14 @@ public class NoteInLabelDTO implements Serializable {
 
 	private String archive;
 	@ApiModelProperty(hidden = true)
-	//@DBRef
+	// @DBRef
 	@Field("label")
 	private List<Label> label;
 
 	private String pinned;
 	@ApiModelProperty(hidden = true)
-    private String trash;
+	private String trash;
+
 	public String getTrash() {
 		return trash;
 	}
@@ -131,7 +133,7 @@ public class NoteInLabelDTO implements Serializable {
 	@Override
 	public String toString() {
 		return "Note [_id=" + _id + ", authorId=" + authorId + ", title=" + title + ", description=" + description
-				+ ", archive=" + archive + ", label="+label+ ", pinned=" + pinned + ", dateOfCreation="
+				+ ", archive=" + archive + ", label=" + label + ", pinned=" + pinned + ", dateOfCreation="
 				+ dateOfCreation + ", lastDateOfModified=" + lastDateOfModified + "]";
 	}
 

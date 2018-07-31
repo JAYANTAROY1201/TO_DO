@@ -1,5 +1,7 @@
 package com.todo.userservice.services;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Optional;
 import javax.mail.MessagingException;
 
@@ -41,7 +43,7 @@ import io.jsonwebtoken.Claims;
  */
 @Service
 public class UserServiceImpl implements IGeneralUserService {
-	@Autowired 
+	@Autowired
 	private MongoOperations mongo;
 	@Autowired
 	private IUserRepository userRepository;
@@ -57,7 +59,7 @@ public class UserServiceImpl implements IGeneralUserService {
 	Messages messages;
 	@Value("${hostandport}")
 	String host;
-	
+
 	public static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
 
 	/**
@@ -70,23 +72,22 @@ public class UserServiceImpl implements IGeneralUserService {
 	@Override
 	public void doSignUp(User user) throws SignupException {
 		logger.debug(messages.get("217"));
-		Preconditions.checkNotNull(user.getEmail(),messages.get("209"));
-		Preconditions.checkNotNull(user.getMobile(),messages.get("210"));
-		Preconditions.checkNotNull(user.getPassword(),messages.get("211"));
-		Preconditions.checkNotNull(user.getUserName(),messages.get("212"));
-		
-			Optional<User> userOp = userRepository.findByEmail(user.getEmail());
-			if (userOp.isPresent()) {
-				throw new SignupException(messages.get("213"));
-			} else {
-                user.set_id(getNextSequence("sequence"));
-				user.setPassword(passwordencoder.encode(user.getPassword()));
-				user.setActivation("false");
-				userRepository.save(user);
-			}
-			logger.debug(messages.get("218"));
+		Preconditions.checkNotNull(user.getEmail(), messages.get("209"));
+		Preconditions.checkNotNull(user.getMobile(), messages.get("210"));
+		Preconditions.checkNotNull(user.getPassword(), messages.get("211"));
+		Preconditions.checkNotNull(user.getUserName(), messages.get("212"));
+
+		Optional<User> userOp = userRepository.findByEmail(user.getEmail());
+		if (userOp.isPresent()) {
+			throw new SignupException(messages.get("213"));
+		} else {
+			user.set_id(getNextSequence("sequence"));
+			user.setPassword(passwordencoder.encode(user.getPassword()));
+			user.setActivation("false");
+			userRepository.save(user);
+		}
+		logger.debug(messages.get("218"));
 	}
-	
 
 	/**
 	 * This method is add functionality for login
@@ -99,19 +100,18 @@ public class UserServiceImpl implements IGeneralUserService {
 	@Override
 	public String doLogIn(LoginDTO loginCredentials) throws LoginException {
 		logger.debug(messages.get("219"));
-		Preconditions.checkNotNull(loginCredentials.getEmail(),messages.get("209"));
-		Preconditions.checkNotNull(loginCredentials.getPassword(),messages.get("211"));		
+		Preconditions.checkNotNull(loginCredentials.getEmail(), messages.get("209"));
+		Preconditions.checkNotNull(loginCredentials.getPassword(), messages.get("211"));
 		if (userRepository.findByEmail(loginCredentials.getEmail()).isPresent() == false) {
 			throw new LoginException(messages.get("214"));
 		}
 		if (userRepository.findByEmail(loginCredentials.getEmail()).get().getActivation().equals("false")) {
 			throw new LoginException(messages.get("215"));
 		}
-		if (!passwordencoder.matches(loginCredentials.getPassword(), userRepository.findByEmail(loginCredentials.getEmail()).get().getPassword())) {
+		if (!passwordencoder.matches(loginCredentials.getPassword(),
+				userRepository.findByEmail(loginCredentials.getEmail()).get().getPassword())) {
 			throw new LoginException(messages.get("216"));
-		} 
-		else 
-		{
+		} else {
 			User user = new User();
 			user = userRepository.findByEmail(loginCredentials.getEmail()).get();
 			JwtTokenBuilder jwt = new JwtTokenBuilder();
@@ -119,7 +119,6 @@ public class UserServiceImpl implements IGeneralUserService {
 			logger.debug(messages.get("220"));
 			return jwt.createJWT(user);
 		}
-		
 
 	}
 
@@ -129,10 +128,11 @@ public class UserServiceImpl implements IGeneralUserService {
 	 * @param jwToken
 	 * @param emp
 	 * @throws MessagingException
+	 * @throws UnknownHostException
 	 */
-	public void sendActivationLink(String to, String jwt) throws MessagingException {
+	public void sendActivationLink(String to, String jwt) throws MessagingException, UnknownHostException {
 		logger.debug(messages.get("221"));
-		String body = "Click here to activate your account:\n\n" + host + "/fundoo/user/activateaccount/?" + jwt;
+		String body = messages.get("500") + "\n\n" + host + messages.get("501") + jwt;
 		rabbitSender.send(to, "Email Activation Link", body);
 		logger.debug(messages.get("222"));
 	}
@@ -192,16 +192,11 @@ public class UserServiceImpl implements IGeneralUserService {
 		userRepository.save(user.get());
 		logger.debug(messages.get("228"));
 	}
-	
-	
-	public String getNextSequence(String seqName)
-    {
-        Sequence counter = mongo.findAndModify(
-            query(where("_id").is(seqName)),
-            new Update().inc("seq",1),
-            options().returnNew(true).upsert(true),
-            Sequence.class);
-        return counter.getSeq()+"";
-    }
-	
+
+	public String getNextSequence(String seqName) {
+		Sequence counter = mongo.findAndModify(query(where("_id").is(seqName)), new Update().inc("seq", 1),
+				options().returnNew(true).upsert(true), Sequence.class);
+		return counter.getSeq() + "";
+	}
+
 }

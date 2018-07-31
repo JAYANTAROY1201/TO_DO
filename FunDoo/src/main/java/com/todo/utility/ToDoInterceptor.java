@@ -10,19 +10,22 @@ import com.todo.noteservice.dao.IRedisRepository;
 import com.todo.userservice.model.User;
 
 /**
- * purpose: 
+ * purpose: Interceptor class for application
+ * 
  * @author JAYANTA ROY
  * @version 1.0
- * @since 10/07/18
+ * @since 30/07/18
  */
 public class ToDoInterceptor implements HandlerInterceptor {
-
 
 	@Autowired
 	private IRedisRepository<String, User> redisRepository;
 
-	/** (non-Javadoc)
-	 * @see org.springframework.web.servlet.HandlerInterceptor#preHandle(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, java.lang.Object)
+	/**
+	 * (non-Javadoc)
+	 * 
+	 * @see org.springframework.web.servlet.HandlerInterceptor#preHandle(javax.servlet.http.HttpServletRequest,
+	 *      javax.servlet.http.HttpServletResponse, java.lang.Object)
 	 */
 	@Override
 	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object object) {

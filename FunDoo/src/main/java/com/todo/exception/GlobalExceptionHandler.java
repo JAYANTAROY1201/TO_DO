@@ -12,7 +12,11 @@ import com.todo.userservice.model.ResponseBean;
 import com.todo.utility.Messages;
 
 /**
- * <p>purpose: This class is designed to handle all exceptions</p><br>
+ * <p>
+ * purpose: This class is designed to handle all exceptions
+ * </p>
+ * <br>
+ * 
  * @author JAYANTA ROY
  * @version 1.0
  * @since 12/07/18
@@ -20,12 +24,13 @@ import com.todo.utility.Messages;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
-@Autowired
-Messages messsages;
+	@Autowired
+	Messages messsages;
 	private final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
 	/**
 	 * This method to handle Note exception
+	 * 
 	 * @param exception
 	 * @return response entity
 	 */
@@ -39,7 +44,8 @@ Messages messsages;
 	}
 
 	/**
-	 * This method handle login exception 
+	 * This method handle login exception
+	 * 
 	 * @param exception
 	 * @return response entity
 	 */
@@ -54,6 +60,7 @@ Messages messsages;
 
 	/**
 	 * This method handle signup exception
+	 * 
 	 * @param exception
 	 * @return response entity
 	 */

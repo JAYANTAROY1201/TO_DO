@@ -6,14 +6,19 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import com.todo.utility.ToDoInterceptor;
 
-public class InterceptorConfig implements WebMvcConfigurer{
+/**
+ * purpose:Configuration class for interceptor
+ * 
+ * @author JAYANTA ROY
+ * @version 1.0
+ * @since 30/07/18
+ */
+public class InterceptorConfig implements WebMvcConfigurer {
 	@Autowired
 	private ToDoInterceptor toDoInterceptor;
-	
+
 	@Override
 	public void addInterceptors(InterceptorRegistry registry) {
-	registry.addInterceptor(toDoInterceptor).addPathPatterns("/fundoo/note/**");									
+		registry.addInterceptor(toDoInterceptor).addPathPatterns("/fundoo/note/**");
 	}
 }
-
-

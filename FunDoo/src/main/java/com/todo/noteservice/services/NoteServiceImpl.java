@@ -18,6 +18,8 @@ import org.springframework.stereotype.Service;
 import com.google.common.base.Preconditions;
 import com.todo.exception.NoteReaderException;
 import com.todo.noteservice.dao.LabelRepository;
+import com.todo.noteservice.dao.ILabelElasticRepository;
+import com.todo.noteservice.dao.INoteElasticRepository;
 import com.todo.noteservice.dao.INoteRepository;
 import com.todo.noteservice.model.Label;
 import com.todo.noteservice.model.Note;
@@ -35,10 +37,14 @@ import com.todo.utility.Messages;
 public class NoteServiceImpl implements IGeneralNoteService {
 	@Autowired
 	private INoteRepository repo;
+	@Autowired
+	private INoteElasticRepository noteRepositoryElastic;
 
 	Timer timer;
 	@Autowired
 	LabelRepository repoLabel;
+	@Autowired
+	ILabelElasticRepository repoLabelElastic;
 	@Autowired
 	ModelMapper mapper;
 	@Autowired
@@ -59,7 +65,7 @@ public class NoteServiceImpl implements IGeneralNoteService {
 		Preconditions.checkNotNull(note.getTitle(), note.getDescription(), messages.get("111"));
 		SimpleDateFormat sdf = new SimpleDateFormat("yyMMddhhmmssMs");
 		String noteid = sdf.format(new Date());
-		note.set_id(noteid);
+		note.setId(noteid);
 		note.setAuthorId(authorId);
 		SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
 		note.setDateOfCreation(formatter.format(new Date()));
@@ -70,12 +76,14 @@ public class NoteServiceImpl implements IGeneralNoteService {
 			note.getLabel().get(i).setNoteId(noteid);
 			note.getLabel().get(i).setUserId(authorId);
 			repoLabel.save(note.getLabel().get(i));
+			repoLabelElastic.save(note.getLabel().get(i));
 		}
 		if (note.getArchive().equals("true") && note.getPinned().equals("true")) {
 			note.setArchive("true");
 			note.setPinned("false");
 		}
 		repo.save(note);
+		noteRepositoryElastic.save(note);
 		logger.debug(messages.get("116"));
 	}
 
@@ -139,7 +147,7 @@ public class NoteServiceImpl implements IGeneralNoteService {
 		List<Note> notes = new ArrayList<>();
 		Optional<Note>[] userNotes = Preconditions.checkNotNull(repo.findByAuthorId(userID), messages.get("112"));
 		for (int i = 0; i < userNotes.length; i++) {
-			if (userNotes[i].get().get_id().equals(noteId) && userNotes[i].get().getTrash().equals("false")) {
+			if (userNotes[i].get().getId().equals(noteId) && userNotes[i].get().getTrash().equals("false")) {
 				logger.info(userNotes[i].get().toString());
 				notes.add(userNotes[i].get());
 			}
@@ -161,7 +169,7 @@ public class NoteServiceImpl implements IGeneralNoteService {
 		int count = 0;
 		Optional<Note>[] noteOptional = Preconditions.checkNotNull(repo.findByAuthorId(userId), messages.get("112"));
 		for (int i = 0; i < noteOptional.length; i++) {
-			if (noteOptional[i].get().get_id().equals(noteId) && noteOptional[i].get().getTrash().equals("false")) {
+			if (noteOptional[i].get().getId().equals(noteId) && noteOptional[i].get().getTrash().equals("false")) {
 				count++;
 				if (!newTitle.equals("")) {
 					noteOptional[i].get().setTitle(newTitle);
@@ -195,7 +203,7 @@ public class NoteServiceImpl implements IGeneralNoteService {
 		Optional<Note>[] noteOptional = Preconditions.checkNotNull(repo.findByAuthorId(userId), messages.get("112"));
 
 		for (int i = 0; i < noteOptional.length; i++) {
-			if (noteOptional[i].get().get_id().equals(noteId)) {
+			if (noteOptional[i].get().getId().equals(noteId)) {
 				count++;
 			}
 		}
@@ -225,7 +233,7 @@ public class NoteServiceImpl implements IGeneralNoteService {
 		Optional<Note>[] noteOptional = Preconditions.checkNotNull(repo.findByAuthorId(userId), messages.get("112"));
 
 		for (int i = 0; i < noteOptional.length; i++) {
-			if (noteOptional[i].get().get_id().equals(noteId) && noteOptional[i].get().getTrash().equals("false")) {
+			if (noteOptional[i].get().getId().equals(noteId) && noteOptional[i].get().getTrash().equals("false")) {
 				count++;
 			}
 		}
@@ -236,7 +244,7 @@ public class NoteServiceImpl implements IGeneralNoteService {
 
 		else {
 			for (int i = 0; i < noteOptional.length; i++) {
-				if (noteOptional[i].get().get_id().equals(noteId) && noteOptional[i].get().getTrash().equals("false")) {
+				if (noteOptional[i].get().getId().equals(noteId) && noteOptional[i].get().getTrash().equals("false")) {
 					noteOptional[i].get().setArchive("true");
 					noteOptional[i].get().setPinned("false");
 					repo.save(noteOptional[i].get());
@@ -258,7 +266,7 @@ public class NoteServiceImpl implements IGeneralNoteService {
 		Optional<Note>[] noteOptional = Preconditions.checkNotNull(repo.findByAuthorId(userId), messages.get("112"));
 
 		for (int i = 0; i < noteOptional.length; i++) {
-			if (noteOptional[i].get().get_id().equals(noteId) && noteOptional[i].get().getTrash().equals("false")) {
+			if (noteOptional[i].get().getId().equals(noteId) && noteOptional[i].get().getTrash().equals("false")) {
 				count++;
 			}
 		}
@@ -269,7 +277,7 @@ public class NoteServiceImpl implements IGeneralNoteService {
 
 		else {
 			for (int i = 0; i < noteOptional.length; i++) {
-				if (noteOptional[i].get().get_id().equals(noteId) && noteOptional[i].get().getTrash().equals("false")) {
+				if (noteOptional[i].get().getId().equals(noteId) && noteOptional[i].get().getTrash().equals("false")) {
 					noteOptional[i].get().setArchive("false");
 					repo.save(noteOptional[i].get());
 				}
@@ -290,7 +298,7 @@ public class NoteServiceImpl implements IGeneralNoteService {
 		Optional<Note>[] noteOptional = Preconditions.checkNotNull(repo.findByAuthorId(userId), messages.get("112"));
 
 		for (int i = 0; i < noteOptional.length; i++) {
-			if (noteOptional[i].get().get_id().equals(noteId) && noteOptional[i].get().getTrash().equals("false")) {
+			if (noteOptional[i].get().getId().equals(noteId) && noteOptional[i].get().getTrash().equals("false")) {
 				count++;
 			}
 		}
@@ -301,7 +309,7 @@ public class NoteServiceImpl implements IGeneralNoteService {
 
 		else {
 			for (int i = 0; i < noteOptional.length; i++) {
-				if (noteOptional[i].get().get_id().equals(noteId) && noteOptional[i].get().getTrash().equals("false")) {
+				if (noteOptional[i].get().getId().equals(noteId) && noteOptional[i].get().getTrash().equals("false")) {
 					if (noteOptional[i].get().getArchive().equals("true")) {
 						logger.error(messages.get("136"));
 						throw new NoteReaderException(messages.get("136"));
@@ -325,7 +333,7 @@ public class NoteServiceImpl implements IGeneralNoteService {
 		Optional<Note>[] noteOptional = Preconditions.checkNotNull(repo.findByAuthorId(userId), messages.get("112"));
 
 		for (int i = 0; i < noteOptional.length; i++) {
-			if (noteOptional[i].get().get_id().equals(noteId) && noteOptional[i].get().getTrash().equals("false")) {
+			if (noteOptional[i].get().getId().equals(noteId) && noteOptional[i].get().getTrash().equals("false")) {
 				count++;
 			}
 		}
@@ -336,7 +344,7 @@ public class NoteServiceImpl implements IGeneralNoteService {
 
 		else {
 			for (int i = 0; i < noteOptional.length; i++) {
-				if (noteOptional[i].get().get_id().equals(noteId) && noteOptional[i].get().getTrash().equals("false")) {
+				if (noteOptional[i].get().getId().equals(noteId) && noteOptional[i].get().getTrash().equals("false")) {
 					noteOptional[i].get().setPinned("false");
 					repo.save(noteOptional[i].get());
 				}
@@ -353,13 +361,13 @@ public class NoteServiceImpl implements IGeneralNoteService {
 	 */
 	public void addNoteToLabel(String userId, String labelName, NoteInLabelDTO noteLabel) throws NoteReaderException {
 		logger.debug("adding note to level process starts");
-		Preconditions.checkNotNull(labelName,messages.get("137"));
+		Preconditions.checkNotNull(labelName, messages.get("137"));
 		Preconditions.checkNotNull(repo.findByAuthorId(userId), messages.get("112"));
 
 		Note note = mapper.map(noteLabel, Note.class);
 		SimpleDateFormat sdf = new SimpleDateFormat("yyMMddhhmmssMs");
 		String noteid = sdf.format(new Date());
-		note.set_id(noteid);
+		note.setId(noteid);
 		note.setAuthorId(userId);
 		note.setDateOfCreation(new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(new Date()));
 		note.setLastDateOfModified(new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(new Date()));
@@ -385,12 +393,12 @@ public class NoteServiceImpl implements IGeneralNoteService {
 	 */
 	public void doSetLabel(String userId, String noteId, String labelName) throws NoteReaderException {
 		logger.debug("adding level process starts");
-		Preconditions.checkNotNull(labelName,messages.get("137"));
+		Preconditions.checkNotNull(labelName, messages.get("137"));
 		int count = 0;
 		Optional<Note>[] noteOptional = Preconditions.checkNotNull(repo.findByAuthorId(userId), "No user");
 
 		for (int i = 0; i < noteOptional.length; i++) {
-			if (noteOptional[i].get().get_id().equals(noteId)) {
+			if (noteOptional[i].get().getId().equals(noteId)) {
 				count++;
 			}
 		}
@@ -401,7 +409,7 @@ public class NoteServiceImpl implements IGeneralNoteService {
 
 		else {
 			for (int i = 0; i < noteOptional.length; i++) {
-				if (noteOptional[i].get().get_id().equals(noteId)) {
+				if (noteOptional[i].get().getId().equals(noteId)) {
 					Label label = new Label();
 					label.setNoteId(noteId);
 					label.setUserId(userId);
@@ -425,7 +433,7 @@ public class NoteServiceImpl implements IGeneralNoteService {
 	 */
 	public void doMakeLabel(String userId, Label label) throws NoteReaderException {
 		logger.debug("making level process starts");
-		Preconditions.checkNotNull(label.getLabelName(),messages.get("137"));
+		Preconditions.checkNotNull(label.getLabelName(), messages.get("137"));
 		if (repoLabel.findByLabelName(label.getLabelName()).isEmpty()) {
 			label.setUserId(userId);
 			repoLabel.save(label);
@@ -463,7 +471,7 @@ public class NoteServiceImpl implements IGeneralNoteService {
 		Optional<Note>[] noteOptional = Preconditions.checkNotNull(repo.findByAuthorId(userId), messages.get("112"));
 
 		for (Optional<Note> note : noteOptional) {
-			if (note.get().get_id().equals(noteId)) {
+			if (note.get().getId().equals(noteId)) {
 
 				Date reminder = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").parse(reminderTime);
 				long timeDifference = reminder.getTime() - new Date().getTime();

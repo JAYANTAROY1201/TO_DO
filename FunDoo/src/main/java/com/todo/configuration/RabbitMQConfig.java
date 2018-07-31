@@ -1,4 +1,5 @@
 package com.todo.configuration;
+
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
@@ -16,6 +17,7 @@ import org.springframework.context.annotation.Configuration;
 
 /**
  * purpose: This class is designed to configure RAbbitMQ
+ * 
  * @author JAYANTA ROY
  * @version 1.0
  * @since 17/07/18
@@ -52,22 +54,19 @@ public class RabbitMQConfig {
 		return new Jackson2JsonMessageConverter();
 	}
 
-	
 	@Bean
 	public AmqpTemplate rabbitTemplate(ConnectionFactory connectionFactory) {
 		final RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
 		rabbitTemplate.setMessageConverter(jsonMessageConverter());
 		return rabbitTemplate;
 	}
-	
+
 	@Bean
-    public SimpleRabbitListenerContainerFactory jsaFactory(ConnectionFactory connectionFactory,
-            SimpleRabbitListenerContainerFactoryConfigurer configurer) {
-        SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
-        configurer.configure(factory, connectionFactory);
-        factory.setMessageConverter(jsonMessageConverter());
-        return factory;
-    }
+	public SimpleRabbitListenerContainerFactory jsaFactory(ConnectionFactory connectionFactory,
+			SimpleRabbitListenerContainerFactoryConfigurer configurer) {
+		SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
+		configurer.configure(factory, connectionFactory);
+		factory.setMessageConverter(jsonMessageConverter());
+		return factory;
+	}
 }
-
-

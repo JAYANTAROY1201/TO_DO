@@ -1,7 +1,7 @@
 package com.todo.exception;
 
 /**
- * purpose:
+ * purpose:handle Exception occurred for note
  * 
  * @author JAYANTA ROY
  * @version 1.0

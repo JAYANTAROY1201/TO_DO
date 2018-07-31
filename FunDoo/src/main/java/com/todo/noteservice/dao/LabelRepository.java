@@ -9,7 +9,9 @@ import org.springframework.stereotype.Repository;
 import com.todo.noteservice.model.Label;
 
 /**
- * Purpose:This interface is designed to provide methods to perform label operation
+ * Purpose:This interface is designed to provide methods to perform label
+ * operation
+ * 
  * @author JAYANTA ROY
  * @version 1.0
  * @since 20/07/18

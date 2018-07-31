@@ -8,12 +8,13 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import io.swagger.annotations.ApiModelProperty;
 
 /**
- * purpose: 
+ * purpose: User pojo class to define user properties
+ * 
  * @author JAYANTA ROY
  * @version 1.0
  * @since 14/07/18
  */
-@Document(collection="user")
+@Document(collection = "user")
 public class User implements Serializable {
 
 	private static final long serialVersionUID = 1L;
@@ -26,9 +27,10 @@ public class User implements Serializable {
 	private String password;
 	@ApiModelProperty(hidden = true)
 	private String activation;
-	
-	public User() {}
-	
+
+	public User() {
+	}
+
 	/**
 	 * @return
 	 */
@@ -36,74 +38,87 @@ public class User implements Serializable {
 	public String get_id() {
 		return _id;
 	}
+
 	/**
 	 * @param _id
 	 */
 	public void set_id(String _id) {
 		this._id = _id;
 	}
+
 	/**
 	 * @return
 	 */
 	public String getUserName() {
 		return userName;
 	}
+
 	/**
 	 * @param userName
 	 */
 	public void setUserName(String userName) {
 		this.userName = userName;
 	}
+
 	/**
 	 * @return
 	 */
 	public String getEmail() {
 		return email;
 	}
+
 	/**
 	 * @param email
 	 */
 	public void setEmail(String email) {
 		this.email = email;
 	}
+
 	/**
 	 * @return
 	 */
 	public String getMobile() {
 		return mobile;
 	}
+
 	/**
 	 * @param mobile
 	 */
 	public void setMobile(String mobile) {
 		this.mobile = mobile;
 	}
+
 	/**
 	 * @return
 	 */
 	public String getPassword() {
 		return password;
 	}
+
 	/**
 	 * @param password
 	 */
 	public void setPassword(String password) {
 		this.password = password;
 	}
+
 	/**
 	 * @return
 	 */
 	public String getActivation() {
 		return activation;
 	}
+
 	/**
 	 * @param activation
 	 */
 	public void setActivation(String activation) {
 		this.activation = activation;
 	}
-	
-	/** (non-Javadoc)
+
+	/**
+	 * (non-Javadoc)
+	 * 
 	 * @see java.lang.Object#toString()
 	 */
 	@Override

@@ -3,19 +3,28 @@ package com.todo.noteservice.model;
 import java.io.Serializable;
 
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.elasticsearch.annotations.Document;
+
 import io.swagger.annotations.ApiModelProperty;
 import javax.persistence.*;
 
-@Document(collection = "label")
+//@Document(collection = "label")
+/**
+ * purpose: Label bean class to define label properties
+ * 
+ * @author JAYANTA ROY
+ * @version 1.0
+ * @since 10/07/18
+ */
+@Document(indexName = "labeltodo", type = "label")
 public class Label implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 	@Id
 	@ApiModelProperty(hidden = true)
 	@SequenceGenerator(name = "SEQ_GEN", sequenceName = "SEQ_USER", allocationSize = 1)
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "SEQ_GEN")
-	private String _id;
+	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "SEQ_GEN")
+	private String id;
 
 	private String labelName;
 	// @DBRef
@@ -36,13 +45,12 @@ public class Label implements Serializable {
 	public Label() {
 	}
 
-	public String get_id() {
-		return _id;
+	public String getId() {
+		return id;
 	}
 
-	@Id
-	public void set_id(String _id) {
-		this._id = _id;
+	public void setId(String id) {
+		this.id = id;
 	}
 
 	public String getLabelName() {
@@ -63,7 +71,7 @@ public class Label implements Serializable {
 
 	@Override
 	public String toString() {
-		return "Label [labelId=" + _id + ", labelName=" + labelName + ", noteId=" + noteId + "]";
+		return "Label [labelId=" + id + ", labelName=" + labelName + ", noteId=" + noteId + "]";
 	}
 
 }

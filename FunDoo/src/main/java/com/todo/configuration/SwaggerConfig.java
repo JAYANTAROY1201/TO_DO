@@ -16,6 +16,7 @@ import static springfox.documentation.builders.PathSelectors.regex;
 
 /**
  * purpose: This class is designed to configure swagger
+ * 
  * @author JAYANTA ROY
  * @version 1.0
  * @since 10/07/18
@@ -25,8 +26,8 @@ import static springfox.documentation.builders.PathSelectors.regex;
 public class SwaggerConfig {
 	@Bean
 	public Docket postsApi() {
-		return new Docket(DocumentationType.SWAGGER_2).groupName("public-api")
-				.apiInfo(apiInfo()).select().paths(postPaths()).build();
+		return new Docket(DocumentationType.SWAGGER_2).groupName("public-api").apiInfo(apiInfo()).select()
+				.paths(postPaths()).build();
 	}
 
 	private Predicate<String> postPaths() {
@@ -35,17 +36,14 @@ public class SwaggerConfig {
 
 	@SuppressWarnings("deprecation")
 	private ApiInfo apiInfo() {
-		return new ApiInfoBuilder().title("Fundoo Notes")
-				.description("Save paper,Save Tree,Save earth, Save NOTE")
-				.termsOfServiceUrl("")
-				.contact("roy.jayanta1201@gmail.com").license("no licence")
+		return new ApiInfoBuilder().title("Fundoo Notes").description("Save paper,Save Tree,Save earth, Save NOTE")
+				.termsOfServiceUrl("").contact("roy.jayanta1201@gmail.com").license("no licence")
 				.licenseUrl("roy.jayanta1201@gmail.com").version("1.0").build();
 	}
-	
+
 	@Bean
-    SecurityConfiguration security() {
-        return new SecurityConfiguration(null, null, null, null, "JWTToken", ApiKeyVehicle.HEADER, "JWTToken", ",");
-    }
+	SecurityConfiguration security() {
+		return new SecurityConfiguration(null, null, null, null, "JWTToken", ApiKeyVehicle.HEADER, "JWTToken", ",");
+	}
 
 }
-

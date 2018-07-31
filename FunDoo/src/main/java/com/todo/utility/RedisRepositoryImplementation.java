@@ -9,30 +9,30 @@ import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
 
-
 import com.todo.noteservice.dao.IRedisRepository;
 import com.todo.userservice.model.User;
 
 /**
+ * Purpose:
+ * <p>
+ * <b>To store token generated at the time of login operation and provides
+ * setToken,getToken and deleteToken methoods.Redis is an Open source in-memory
+ * data structure store, used as a database, cache and message broker</b>
+ * </p>
+ * 
  * @author jayanta Roy
  * @since 19/07/2018
- *        <p>
- *        <b>To store token generated at the time of login operation and
- *        provides setToken,getToken and deleteToken methoods.Redis is an Open
- *        source in-memory data structure store, used as a database, cache and
- *        message broker</b>
- *        </p>
+ * 
  *
  */
 @Repository
-public class RedisRepositoryImplementation implements IRedisRepository<String,User>{
+public class RedisRepositoryImplementation implements IRedisRepository<String, User> {
 
-	JwtTokenBuilder tokenProvider=new JwtTokenBuilder();
-	
-	private RedisTemplate<String,User> redisTemplate;
+	JwtTokenBuilder tokenProvider = new JwtTokenBuilder();
+
+	private RedisTemplate<String, User> redisTemplate;
 	private static HashOperations<String, String, String> hashOperations;
 	private static String KEY = "TOKEN";
-	
 
 	@Autowired
 	public RedisRepositoryImplementation(RedisTemplate<String, User> redisTemplate) {
@@ -43,7 +43,8 @@ public class RedisRepositoryImplementation implements IRedisRepository<String,Us
 	private static Logger logger = LoggerFactory.getLogger(RedisRepositoryImplementation.class);
 
 	/**
-	 * To initialize hash operations and this method MUST be invoked before the class is put into service.
+	 * To initialize hash operations and this method MUST be invoked before the
+	 * class is put into service.
 	 */
 //	@PostConstruct
 //	private void init() {

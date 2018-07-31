@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.List;
 
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
 import io.swagger.annotations.ApiModelProperty;
@@ -17,24 +17,25 @@ import io.swagger.annotations.ApiModelProperty;
  * @since 18/07/18
  */
 
-@Document(collection = "note")
+//@Document(collection = "note")
+@Document(indexName = "notetodo", type = "note")
 public class Note implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 	@Id
 	@ApiModelProperty(hidden = true)
-	private String _id;
+	private String id;
 	@ApiModelProperty(hidden = true)
 	private String authorId;
 	private String title;
 	private String description;
 	@ApiModelProperty(hidden = true)
-    private String trash;
+	private String trash;
 	private String archive;
 	private String pinned;
 	@Field("label")
 	private List<Label> label;
-   // private List<Image> image;
+	// private List<Image> image;
 
 	@ApiModelProperty(hidden = true)
 	private String dateOfCreation;
@@ -54,13 +55,12 @@ public class Note implements Serializable {
 	public Note() {
 	}
 
-	public String get_id() {
-		return _id;
+	public String getId() {
+		return id;
 	}
 
-	@Id
-	public void set_id(String _id) {
-		this._id = _id;
+	public void setId(String id) {
+		this.id = id;
 	}
 
 	public String getAuthorId() {
@@ -129,8 +129,8 @@ public class Note implements Serializable {
 
 	@Override
 	public String toString() {
-		return "Note [_id=" + _id + ", authorId=" + authorId + ", title=" + title + ", description=" + description
-				+ ", archive=" + archive + ", label="+label+ ", pinned=" + pinned + ", dateOfCreation="
+		return "Note [_id=" + id + ", authorId=" + authorId + ", title=" + title + ", description=" + description
+				+ ", archive=" + archive + ", label=" + label + ", pinned=" + pinned + ", dateOfCreation="
 				+ dateOfCreation + ", lastDateOfModified=" + lastDateOfModified + "]";
 	}
 
