@@ -2,12 +2,14 @@ package com.todo.exception;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import com.todo.userservice.model.ResponseBean;
+import com.todo.utility.Messages;
 
 /**
  * <p>purpose: This class is designed to handle all exceptions</p><br>
@@ -15,9 +17,11 @@ import com.todo.userservice.model.ResponseBean;
  * @version 1.0
  * @since 12/07/18
  */
+
 @ControllerAdvice
 public class GlobalExceptionHandler {
-
+@Autowired
+Messages messsages;
 	private final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
 	/**
@@ -27,7 +31,7 @@ public class GlobalExceptionHandler {
 	 */
 	@ExceptionHandler(NoteReaderException.class)
 	public ResponseEntity<ResponseBean> handleNoteException(NoteReaderException exception) {
-		logger.info("Error Occured While Registration" + exception.getMessage(), exception);
+		logger.info(messsages.get("error.note") + exception.getMessage(), exception);
 		ResponseBean response = new ResponseBean();
 		response.setMessage(exception.getMessage());
 		response.setStatus(-1);
@@ -41,7 +45,7 @@ public class GlobalExceptionHandler {
 	 */
 	@ExceptionHandler(LoginException.class)
 	public ResponseEntity<ResponseBean> handleLoginException(LoginException exception) {
-		logger.info("Error Occured While Registration" + exception.getMessage(), exception);
+		logger.info(messsages.get("error.login") + exception.getMessage(), exception);
 		ResponseBean response = new ResponseBean();
 		response.setMessage(exception.getMessage());
 		response.setStatus(-2);
@@ -55,7 +59,7 @@ public class GlobalExceptionHandler {
 	 */
 	@ExceptionHandler(SignupException.class)
 	public ResponseEntity<ResponseBean> handleSignupException(SignupException exception) {
-		logger.info("Error Occured While Registration" + exception.getMessage(), exception);
+		logger.info(messsages.get("error.signup") + exception.getMessage(), exception);
 		ResponseBean response = new ResponseBean();
 		response.setMessage(exception.getMessage());
 		response.setStatus(-3);

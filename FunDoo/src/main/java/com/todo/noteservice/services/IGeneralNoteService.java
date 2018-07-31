@@ -13,7 +13,7 @@ import com.todo.noteservice.model.Note;
  */
 public interface IGeneralNoteService {
 	public void doCreateNote(Note note, String authorId) throws NoteReaderException;
-	public List<Note> doOpenInbox(String userId) throws NoteReaderException;
+	public List<Note> viewAllNotes(String userID) throws NoteReaderException;
 	public void doUpdateNote(String userId,String noteId ,String newTitle,String newDescription) throws NoteReaderException;
 	public void doDeleteNote(String userId,String noteId) throws NoteReaderException;
 	public List<Note> doOpenArchive(String userID) throws NoteReaderException;

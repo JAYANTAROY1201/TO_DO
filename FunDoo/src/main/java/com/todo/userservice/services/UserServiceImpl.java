@@ -2,6 +2,9 @@ package com.todo.userservice.services;
 
 import java.util.Optional;
 import javax.mail.MessagingException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.core.query.Update;
@@ -13,6 +16,7 @@ import com.todo.exception.AccountActivationException;
 import com.todo.exception.LoginException;
 import com.todo.exception.SignupException;
 import com.todo.noteservice.dao.IRedisRepository;
+import com.todo.noteservice.services.NoteServiceImpl;
 import com.todo.userservice.dao.IUserRepository;
 import com.todo.userservice.dao.IMailService;
 import com.todo.userservice.model.LoginDTO;
@@ -40,7 +44,7 @@ public class UserServiceImpl implements IGeneralUserService {
 	@Autowired 
 	private MongoOperations mongo;
 	@Autowired
-	private IUserRepository gm;
+	private IUserRepository userRepository;
 	@Autowired
 	RabbitMQSender rabbitSender;
 	@Autowired
@@ -49,11 +53,12 @@ public class UserServiceImpl implements IGeneralUserService {
 	IMailService mailService;
 	@Autowired
 	IRedisRepository<String, User> redisImpl;
-	
-	
-	
+	@Autowired
+	Messages messages;
 	@Value("${hostandport}")
 	String host;
+	
+	public static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
 
 	/**
 	 * This method is add functionality for sign up
@@ -64,20 +69,22 @@ public class UserServiceImpl implements IGeneralUserService {
 	 */
 	@Override
 	public void doSignUp(User user) throws SignupException {
-		Preconditions.checkNotNull(user.getEmail(),"Email field is blank");
-		Preconditions.checkNotNull(user.getMobile(),"Mobile field is blank");
-		Preconditions.checkNotNull(user.getPassword(),"Password field is blank");
-		Preconditions.checkNotNull(user.getUserName(),"User name field is blank");
+		logger.debug(messages.get("217"));
+		Preconditions.checkNotNull(user.getEmail(),messages.get("209"));
+		Preconditions.checkNotNull(user.getMobile(),messages.get("210"));
+		Preconditions.checkNotNull(user.getPassword(),messages.get("211"));
+		Preconditions.checkNotNull(user.getUserName(),messages.get("212"));
 		
-			Optional<User> userOp = gm.findByEmail(user.getEmail());
+			Optional<User> userOp = userRepository.findByEmail(user.getEmail());
 			if (userOp.isPresent()) {
-				throw new SignupException("Email already exist");
+				throw new SignupException(messages.get("213"));
 			} else {
                 user.set_id(getNextSequence("sequence"));
 				user.setPassword(passwordencoder.encode(user.getPassword()));
 				user.setActivation("false");
-				gm.save(user);
+				userRepository.save(user);
 			}
+			logger.debug(messages.get("218"));
 	}
 	
 
@@ -90,24 +97,29 @@ public class UserServiceImpl implements IGeneralUserService {
 	 * @throws LoginException
 	 */
 	@Override
-	public String doLogIn(LoginDTO loginCredentials) throws LoginException {	
-		Preconditions.checkNotNull(loginCredentials.getEmail(),"Email can't be null");
-		Preconditions.checkNotNull(loginCredentials.getPassword(),"Password cannot be blank");		
-		if (gm.findByEmail(loginCredentials.getEmail()).isPresent() == false) {
-			throw new LoginException("Email not found");
+	public String doLogIn(LoginDTO loginCredentials) throws LoginException {
+		logger.debug(messages.get("219"));
+		Preconditions.checkNotNull(loginCredentials.getEmail(),messages.get("209"));
+		Preconditions.checkNotNull(loginCredentials.getPassword(),messages.get("211"));		
+		if (userRepository.findByEmail(loginCredentials.getEmail()).isPresent() == false) {
+			throw new LoginException(messages.get("214"));
 		}
-		if (gm.findByEmail(loginCredentials.getEmail()).get().getActivation().equals("false")) {
-			throw new LoginException("Account not activated");
+		if (userRepository.findByEmail(loginCredentials.getEmail()).get().getActivation().equals("false")) {
+			throw new LoginException(messages.get("215"));
 		}
-		if (!passwordencoder.matches(loginCredentials.getPassword(), gm.findByEmail(loginCredentials.getEmail()).get().getPassword())) {
-			throw new LoginException("Password not correct");
-		} else {
+		if (!passwordencoder.matches(loginCredentials.getPassword(), userRepository.findByEmail(loginCredentials.getEmail()).get().getPassword())) {
+			throw new LoginException(messages.get("216"));
+		} 
+		else 
+		{
 			User user = new User();
-			user = gm.findByEmail(loginCredentials.getEmail()).get();
+			user = userRepository.findByEmail(loginCredentials.getEmail()).get();
 			JwtTokenBuilder jwt = new JwtTokenBuilder();
 			redisImpl.setToken(jwt.createJWT(user));
+			logger.debug(messages.get("220"));
 			return jwt.createJWT(user);
 		}
+		
 
 	}
 
@@ -119,8 +131,10 @@ public class UserServiceImpl implements IGeneralUserService {
 	 * @throws MessagingException
 	 */
 	public void sendActivationLink(String to, String jwt) throws MessagingException {
+		logger.debug(messages.get("221"));
 		String body = "Click here to activate your account:\n\n" + host + "/fundoo/user/activateaccount/?" + jwt;
 		rabbitSender.send(to, "Email Activation Link", body);
+		logger.debug(messages.get("222"));
 	}
 
 	/**
@@ -130,14 +144,16 @@ public class UserServiceImpl implements IGeneralUserService {
 	 * @throws AccountActivationException
 	 */
 	public void doActivateEmail(String jwt) throws AccountActivationException {
+		logger.debug(messages.get("223"));
 		Claims claims = JwtTokenBuilder.parseJWT(jwt);
-		if (gm.findById(claims.getId()).isPresent() == false) {
-			throw new AccountActivationException("Account not get activated");
+		if (userRepository.findById(claims.getId()).isPresent() == false) {
+			throw new AccountActivationException(messages.get("215"));
 		} else {
-			Optional<User> user = gm.findById(claims.getId());
+			Optional<User> user = userRepository.findById(claims.getId());
 			user.get().setActivation("true");
-			gm.save(user.get());
+			userRepository.save(user.get());
 		}
+		logger.debug(messages.get("224"));
 	}
 
 	/**
@@ -150,13 +166,15 @@ public class UserServiceImpl implements IGeneralUserService {
 	 * @throws MessagingException
 	 */
 	public void doSendNewPasswordLink(String email) throws LoginException, MessagingException {
+		logger.debug(messages.get("225"));
 		JwtTokenBuilder jb = new JwtTokenBuilder();
-		if (gm.findByEmail(email).isPresent() == false) {
-			throw new LoginException("Email not exist");
+		if (userRepository.findByEmail(email).isPresent() == false) {
+			throw new LoginException(messages.get("214"));
 		}
 		String body = "Copy the below link to postman and reset your password:\n\n" + host
-				+ "/fundoo/user/resetpassword/?" + jb.createJWT(gm.findByEmail(email).get());
+				+ "/fundoo/user/resetpassword/?" + jb.createJWT(userRepository.findByEmail(email).get());
 		mailService.sendMail(email, "Password reset mail", body);
+		logger.debug(messages.get("226"));
 	}
 
 	/**
@@ -167,10 +185,12 @@ public class UserServiceImpl implements IGeneralUserService {
 	 */
 	@Override
 	public void doResetPassword(String jwtToken, String newPassword) {
+		logger.debug(messages.get("227"));
 		Claims claims = JwtTokenBuilder.parseJWT(jwtToken);
-		Optional<User> user = gm.findById(claims.getId());
+		Optional<User> user = userRepository.findById(claims.getId());
 		user.get().setPassword(passwordencoder.encode(newPassword));
-		gm.save(user.get());
+		userRepository.save(user.get());
+		logger.debug(messages.get("228"));
 	}
 	
 	

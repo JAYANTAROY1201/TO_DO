@@ -1,12 +1,11 @@
 package com.todo.noteservice.dao;
 
-import org.springframework.stereotype.Repository;
-
 /**
  * @author jayanta roy
  *
  */
 
+@SuppressWarnings("hiding")
 public interface IRedisRepository <String,User>{
 
 	/**

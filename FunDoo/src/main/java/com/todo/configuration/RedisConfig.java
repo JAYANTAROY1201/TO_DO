@@ -23,8 +23,6 @@ public class RedisConfig {
 	/**
 	 * @return jedisConFactory
 	 */
-	@SuppressWarnings("deprecation")
-	
 	@Bean
 	public JedisConnectionFactory jedisConnectionFactory() 
 	{

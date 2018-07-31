@@ -60,16 +60,14 @@ public class UserController {
 	@RequestMapping(value = "/signup", method = RequestMethod.POST)
 	public ResponseEntity<String> signUp(@RequestBody User user) throws SignupException, MessagingException {
 
-		userService.doSignUp(user);
-      System.out.println(messages.get("default.title"));
-      logger.info(messages.get("print_name"));
-		logger.info("Employee registered with : {}", user.getEmail());
-		String message = "Sign Up Successful";
+		userService.doSignUp(user);     
+		logger.info(messages.get("200"), user.getEmail());
+		
 		JwtTokenBuilder jwt = new JwtTokenBuilder();
 		userService.sendActivationLink(user.getEmail(), jwt.createJWT(user));
-		logger.info("Activation link sent to email");
+		logger.info(messages.get("202"));
 		
-		return new ResponseEntity<String>(message, HttpStatus.OK);
+		return new ResponseEntity<String>(messages.get("201"), HttpStatus.OK);
 	}
 
 	/**
@@ -88,7 +86,7 @@ public class UserController {
    
 		hsr.setHeader("JWTToken",JWTToken);
 		
-		return new ResponseEntity<String>("login successful:\n", HttpStatus.OK);
+		return new ResponseEntity<String>(messages.get("203"), HttpStatus.OK);
 	}
 
 	/**
@@ -106,7 +104,7 @@ public class UserController {
 
 		String message = "Account activated successfully";
 		logger.info(message);
-		return new ResponseEntity<String>(message, HttpStatus.OK);
+		return new ResponseEntity<String>(messages.get("204"), HttpStatus.OK);
 	}
 
 	/**
@@ -122,8 +120,8 @@ public class UserController {
 
 		userService.doSendNewPasswordLink(email);
 
-		logger.info("New password reset link sent to email");
-		return new ResponseEntity<String>("Password sent to email", HttpStatus.OK);
+		logger.info(messages.get("205"));
+		return new ResponseEntity<String>(messages.get("206"), HttpStatus.OK);
 	}
 
 	/**
@@ -139,8 +137,8 @@ public class UserController {
 	{
 		String jwtToken = hsr.getQueryString();
 		userService.doResetPassword(jwtToken, user.getPassword());
-		logger.info("New password set successfully");
-		return new ResponseEntity<String>("New password set successfully", HttpStatus.OK);
+		logger.info(messages.get("207"));
+		return new ResponseEntity<String>(messages.get("208"), HttpStatus.OK);
 	}
 	
 }
