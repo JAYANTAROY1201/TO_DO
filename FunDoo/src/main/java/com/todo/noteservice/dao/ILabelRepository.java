@@ -17,7 +17,8 @@ import com.todo.noteservice.model.Label;
  * @since 20/07/18
  */
 @Repository
-public interface LabelRepository extends MongoRepository<Label, String> {
+public interface ILabelRepository extends MongoRepository<Label, String> {
+	
 	public List<Label> findByLabelName(String labelName);
 
 	public Optional<Label>[] findByNoteId(String noteId);
