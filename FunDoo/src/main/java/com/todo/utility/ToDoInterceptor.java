@@ -4,6 +4,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 import com.todo.noteservice.dao.IRedisRepository;
@@ -16,11 +17,12 @@ import com.todo.userservice.model.User;
  * @version 1.0
  * @since 30/07/18
  */
+@Component
 public class ToDoInterceptor implements HandlerInterceptor {
 
 	@Autowired
 	private IRedisRepository<String, User> redisRepository;
-
+	
 	/**
 	 * (non-Javadoc)
 	 * 
@@ -29,17 +31,19 @@ public class ToDoInterceptor implements HandlerInterceptor {
 	 */
 	@Override
 	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object object) {
-
+        System.out.println("entering Prehandle");
 		String tokenFromHeader = request.getHeader("JWTToken");
+		System.out.println("token fom header "+tokenFromHeader);
 		String userId = JwtTokenBuilder.parseJWT(tokenFromHeader).getId();
 		String tokenFromRedis = redisRepository.getToken(userId);
 		if (tokenFromRedis == null) {
 			return false;
 		}
+		else {
 		request.setAttribute("userId", userId);
-
 		return true;
 
+	}
 	}
 
 }

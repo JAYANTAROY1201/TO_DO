@@ -6,6 +6,8 @@ import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 
+import com.todo.utility.ToDoInterceptor;
+
 /**
  * purpose: Configuration class for todo application
  * 
@@ -15,6 +17,7 @@ import org.springframework.core.io.Resource;
  */
 @Configuration
 public class ToDoConfig {
+
 	@Bean
 	public static PropertySourcesPlaceholderConfigurer propertyConfigurer() {
 		Resource resource;

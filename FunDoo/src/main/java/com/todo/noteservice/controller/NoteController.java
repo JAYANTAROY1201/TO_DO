@@ -54,6 +54,7 @@ public class NoteController {
 	public ResponseEntity<String> createNote(@RequestBody Note note, HttpServletRequest hsr)
 			throws NoteReaderException {
 		logger.info("Create note method starts");
+		System.out.println (hsr.getAttribute("userId"));
 		noteService.doCreateNote(note, (String) hsr.getAttribute("userId"));
 
 		logger.info("Create note method ends");
