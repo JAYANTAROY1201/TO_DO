@@ -18,8 +18,7 @@ import io.swagger.annotations.ApiModelProperty;
  */
 
 //@Document(collection = "note")
-@Document(indexName = "notetodo", type = "note")
-public class Note implements Serializable {
+public class NoteDTO implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 	@Id
@@ -28,7 +27,7 @@ public class Note implements Serializable {
 	@ApiModelProperty(hidden = true)
 	private String authorId;
 	private String title;
-	private Description description;
+	private String description;
 	@ApiModelProperty(hidden = true)
 	private String trash;
 	private String archive;
@@ -52,7 +51,7 @@ public class Note implements Serializable {
 
 	private String lastDateOfModified;
 
-	public Note() {
+	public NoteDTO() {
 	}
 
 	public String getId() {
@@ -79,13 +78,11 @@ public class Note implements Serializable {
 		this.title = title;
 	}
 
-	
-
-	public Description getDescription() {
+	public String getDescription() {
 		return description;
 	}
 
-	public void setDescription(Description description) {
+	public void setDescription(String description) {
 		this.description = description;
 	}
 

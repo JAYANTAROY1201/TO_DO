@@ -23,6 +23,7 @@ import com.todo.exception.LoginException;
 import com.todo.exception.SignupException;
 import com.todo.userservice.model.LoginDTO;
 import com.todo.userservice.model.User;
+import com.todo.userservice.services.IGeneralUserService;
 import com.todo.userservice.services.UserServiceImpl;
 import com.todo.utility.JwtTokenBuilder;
 import com.todo.utility.Messages;
@@ -43,7 +44,7 @@ public class UserController {
 	public static final Logger logger = LoggerFactory.getLogger(UserController.class);
 
 	@Autowired
-	UserServiceImpl userService;
+	IGeneralUserService userService;
 
 	@Autowired
 	Messages messages;

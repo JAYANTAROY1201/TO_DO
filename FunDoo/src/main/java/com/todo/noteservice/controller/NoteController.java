@@ -1,5 +1,6 @@
 package com.todo.noteservice.controller;
 
+import java.io.IOException;
 import java.text.ParseException;
 import java.util.List;
 
@@ -20,7 +21,9 @@ import org.springframework.web.bind.annotation.RestController;
 import com.todo.exception.NoteReaderException;
 import com.todo.noteservice.model.Label;
 import com.todo.noteservice.model.Note;
+import com.todo.noteservice.model.NoteDTO;
 import com.todo.noteservice.model.NoteInLabelDTO;
+import com.todo.noteservice.services.IGeneralNoteService;
 import com.todo.noteservice.services.NoteServiceImpl;
 import com.todo.userservice.controller.UserController;
 import com.todo.utility.Messages;
@@ -37,7 +40,7 @@ import com.todo.utility.Messages;
 public class NoteController {
 	public static final Logger logger = LoggerFactory.getLogger(UserController.class);
 	@Autowired
-	NoteServiceImpl noteService;
+	IGeneralNoteService noteService;
 	@Autowired
 	Messages messages;
 
@@ -49,17 +52,18 @@ public class NoteController {
 	 * @param jwt
 	 * @return response entity
 	 * @throws NoteReaderException
+	 * @throws IOException 
 	 */
 	@RequestMapping(value = "/create_note", method = RequestMethod.POST)
-	public ResponseEntity<String> createNote(@RequestBody Note note, HttpServletRequest hsr)
-			throws NoteReaderException {
+	public ResponseEntity<String> createNote(@RequestBody NoteDTO note, HttpServletRequest hsr)
+			throws NoteReaderException, IOException {
 		logger.info("Create note method starts");
 		System.out.println (hsr.getAttribute("userId"));
-		noteService.doCreateNote(note, (String) hsr.getAttribute("userId"));
+		String noteId=noteService.doCreateNote(note, (String) hsr.getAttribute("userId"));
 
 		logger.info("Create note method ends");
 		logger.info(messages.get("100"));
-		return new ResponseEntity<String>(messages.get("100"), HttpStatus.OK);
+		return new ResponseEntity<String>(messages.get("100")+" with note ID: "+noteId, HttpStatus.OK);
 	}
 
 	/**
@@ -122,10 +126,11 @@ public class NoteController {
 	 * @param newDescription
 	 * @return response entity
 	 * @throws NoteReaderException
+	 * @throws IOException 
 	 */
 	@RequestMapping(value = "/update_notes/{noteId}", method = RequestMethod.PUT)
 	public ResponseEntity<String> updateNote(HttpServletRequest hsr, @PathVariable("noteId") String noteId,
-			@RequestBody Note note) throws NoteReaderException {
+			@RequestBody NoteDTO note) throws NoteReaderException, IOException {
 		logger.info("Update note method starts");
 
 		noteService.doUpdateNote((String) hsr.getAttribute("userId"), noteId, note.getTitle(), note.getDescription());

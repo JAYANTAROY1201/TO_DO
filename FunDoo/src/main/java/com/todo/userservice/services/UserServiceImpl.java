@@ -61,7 +61,6 @@ public class UserServiceImpl implements IGeneralUserService {
 	String host;
 
 	public static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
-
 	/**
 	 * This method is add functionality for sign up
 	 * 
@@ -89,7 +88,8 @@ public class UserServiceImpl implements IGeneralUserService {
 		logger.debug(messages.get("218"));
 	}
 
-	/**
+	/*************************************************************************************************************
+	 * 
 	 * This method is add functionality for login
 	 * 
 	 * @param email
@@ -122,14 +122,17 @@ public class UserServiceImpl implements IGeneralUserService {
 
 	}
 
-	/**
-	 * This method is written to task send an activation link to registered email
+	/*************************************************************************************************************
+	 * 
+	 * This method is written to task send an activation link to registered
+	 * email
 	 * 
 	 * @param jwToken
 	 * @param emp
 	 * @throws MessagingException
 	 * @throws UnknownHostException
 	 */
+	@Override
 	public void sendActivationLink(String to, String jwt) throws MessagingException, UnknownHostException {
 		logger.debug(messages.get("221"));
 		String body = messages.get("500") + "\n\n" + host + messages.get("501") + jwt;
@@ -137,12 +140,14 @@ public class UserServiceImpl implements IGeneralUserService {
 		logger.debug(messages.get("222"));
 	}
 
-	/**
+	/*************************************************************************************************************
+	 * 
 	 * This method is written to activate the account
 	 * 
 	 * @param jwt
 	 * @throws AccountActivationException
 	 */
+	@Override
 	public void doActivateEmail(String jwt) throws AccountActivationException {
 		logger.debug(messages.get("223"));
 		Claims claims = JwtTokenBuilder.parseJWT(jwt);
@@ -156,15 +161,17 @@ public class UserServiceImpl implements IGeneralUserService {
 		logger.debug(messages.get("224"));
 	}
 
-	/**
-	 * This method is written to send password to the registered email to if user
-	 * forget password
+	/*************************************************************************************************************
+	 * 
+	 * This method is written to send password to the registered email to if
+	 * user forget password
 	 * 
 	 * @param email
 	 * @return true if mail sent successfully else false
 	 * @throws LoginException
 	 * @throws MessagingException
 	 */
+	@Override
 	public void doSendNewPasswordLink(String email) throws LoginException, MessagingException {
 		logger.debug(messages.get("225"));
 		JwtTokenBuilder jb = new JwtTokenBuilder();
@@ -177,11 +184,12 @@ public class UserServiceImpl implements IGeneralUserService {
 		logger.debug(messages.get("226"));
 	}
 
-	/**
-	 * Method to reset password
+	/*************************************************************************************************************
 	 * 
-	 * @param jwtToken
-	 * @param newPassword
+	 * (non-Javadoc)
+	 * 
+	 * @see com.todo.userservice.services.IGeneralUserService#doResetPassword(java.lang.String,
+	 *      java.lang.String)
 	 */
 	@Override
 	public void doResetPassword(String jwtToken, String newPassword) {
@@ -193,6 +201,13 @@ public class UserServiceImpl implements IGeneralUserService {
 		logger.debug(messages.get("228"));
 	}
 
+	/*************************************************************************************************************
+	 * 
+	 * (non-Javadoc)
+	 * 
+	 * @see com.todo.userservice.services.IGeneralUserService#getNextSequence(java.lang.String)
+	 */
+	@Override
 	public String getNextSequence(String seqName) {
 		Sequence counter = mongo.findAndModify(query(where("_id").is(seqName)), new Update().inc("seq", 1),
 				options().returnNew(true).upsert(true), Sequence.class);

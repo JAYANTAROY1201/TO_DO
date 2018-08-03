@@ -1,5 +1,6 @@
 package com.todo.noteservice.services;
 
+import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -22,9 +23,13 @@ import com.todo.noteservice.dao.ILabelRepository;
 import com.todo.noteservice.dao.ILabelElasticRepository;
 import com.todo.noteservice.dao.INoteElasticRepository;
 import com.todo.noteservice.dao.INoteRepository;
+import com.todo.noteservice.model.Description;
 import com.todo.noteservice.model.Label;
+import com.todo.noteservice.model.Link;
 import com.todo.noteservice.model.Note;
+import com.todo.noteservice.model.NoteDTO;
 import com.todo.noteservice.model.NoteInLabelDTO;
+import com.todo.utility.JsoupImpl;
 import com.todo.utility.Messages;
 
 /**
@@ -56,22 +61,31 @@ public class NoteServiceImpl implements IGeneralNoteService {
 	 * this method is written to create Note
 	 * 
 	 * @throws NoteReaderException
+	 * @throws IOException
 	 * 
 	 * @see com.todo.noteservice.services.IGeneralNoteService#doCreateNote(java.lang.String,
 	 *      java.lang.String, java.lang.String)
 	 */
 	@Override
-	public void doCreateNote(Note note, String authorId) throws NoteReaderException {
+	public String doCreateNote(NoteDTO note, String authorId) throws NoteReaderException, IOException {
 		logger.debug(messages.get("115"));
 		Preconditions.checkNotNull(note.getTitle(), note.getDescription(), messages.get("111"));
+		Note notes = new Note();
+		if (!note.getDescription().equals("")) {
+			String noteDescription = note.getDescription();
+			notes.setDescription(makeDescription(noteDescription));
+		}
 		SimpleDateFormat sdf = new SimpleDateFormat("yyMMddhhmmssMs");
 		String noteid = sdf.format(new Date());
-		note.setId(noteid);
-		note.setAuthorId(authorId);
+		notes.setId(noteid);
+		notes.setAuthorId(authorId);
 		SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-		note.setDateOfCreation(formatter.format(new Date()));
-		note.setLastDateOfModified(formatter.format(new Date()));
-		note.setTrash("false");
+		notes.setDateOfCreation(formatter.format(new Date()));
+		notes.setLastDateOfModified(formatter.format(new Date()));
+		notes.setTrash("false");
+		notes.setTitle(note.getTitle());
+		notes.setArchive(note.getArchive());
+		notes.setPinned(note.getPinned());
 
 		for (int i = 0; i < note.getLabel().size(); i++) {
 			note.getLabel().get(i).setNoteId(noteid);
@@ -79,13 +93,15 @@ public class NoteServiceImpl implements IGeneralNoteService {
 			repoLabel.save(note.getLabel().get(i));
 			repoLabelElastic.save(note.getLabel().get(i));
 		}
+		notes.setLabel(note.getLabel());
 		if (note.getArchive().equals("true") && note.getPinned().equals("true")) {
 			note.setArchive("true");
 			note.setPinned("false");
 		}
-		repo.save(note);
-		noteRepositoryElastic.save(note);
+		repo.save(notes);
+		noteRepositoryElastic.save(notes);
 		logger.debug(messages.get("116"));
+		return noteid;
 	}
 
 	/**
@@ -96,12 +112,17 @@ public class NoteServiceImpl implements IGeneralNoteService {
 	@Override
 	public List<Note> viewAllNotes(String userID) throws NoteReaderException {
 		logger.debug(messages.get("117"));
-		List<Note> noteList = Preconditions.checkNotNull(noteRepositoryElastic.findByAuthorId(userID), messages.get("112"));
+		List<Note> noteList = Preconditions.checkNotNull(noteRepositoryElastic.findByAuthorId(userID),
+				messages.get("112"));
 		List<Note> notes = new ArrayList<>();
-		noteList.stream().filter(streamNote->(streamNote.getPinned().equals("true")) && (streamNote.getArchive().equals("false")) && 
-				(streamNote.getTrash().equals("false"))).forEach(noteFilter->notes.add(noteFilter));
-		noteList.stream().filter(streamNote->(streamNote.getPinned().equals("false")) && (streamNote.getArchive().equals("false")) && 
-				(streamNote.getTrash().equals("false"))).forEach(noteFilter->notes.add(noteFilter));
+		noteList.stream()
+				.filter(streamNote -> (streamNote.getPinned().equals("true"))
+						&& (streamNote.getArchive().equals("false")) && (streamNote.getTrash().equals("false")))
+				.forEach(noteFilter -> notes.add(noteFilter));
+		noteList.stream()
+				.filter(streamNote -> (streamNote.getPinned().equals("false"))
+						&& (streamNote.getArchive().equals("false")) && (streamNote.getTrash().equals("false")))
+				.forEach(noteFilter -> notes.add(noteFilter));
 
 		logger.debug(messages.get("118"));
 		return notes;
@@ -117,8 +138,9 @@ public class NoteServiceImpl implements IGeneralNoteService {
 		logger.debug(messages.get("119"));
 		List<Note> notes = new ArrayList<>();
 		List<Note> noteList = Preconditions.checkNotNull(noteRepositoryElastic.findByAuthorId(userID), "No note found");
-		noteList.stream().filter(streamNote->(streamNote.getArchive().equals("true")) && 
-				(streamNote.getTrash().equals("false"))).forEach(noteFilter->notes.add(noteFilter));
+		noteList.stream().filter(
+				streamNote -> (streamNote.getArchive().equals("true")) && (streamNote.getTrash().equals("false")))
+				.forEach(noteFilter -> notes.add(noteFilter));
 		logger.debug(messages.get("120"));
 		return notes;
 	}
@@ -133,8 +155,11 @@ public class NoteServiceImpl implements IGeneralNoteService {
 	public List<Note> doOpenNote(String userID, String noteId) throws NoteReaderException {
 		logger.debug(messages.get("121"));
 		List<Note> notes = new ArrayList<>();
-		List<Note> userNotesList = Preconditions.checkNotNull(noteRepositoryElastic.findByAuthorId(userID), messages.get("112"));
-		userNotesList.stream().filter(streamNote->(streamNote.getId().equals(noteId)) && (streamNote.getTrash().equals("false"))).forEach(filterNote->notes.add(filterNote));	
+		List<Note> userNotesList = Preconditions.checkNotNull(noteRepositoryElastic.findByAuthorId(userID),
+				messages.get("112"));
+		userNotesList.stream()
+				.filter(streamNote -> (streamNote.getId().equals(noteId)) && (streamNote.getTrash().equals("false")))
+				.forEach(filterNote -> notes.add(filterNote));
 		logger.debug(messages.get("122"));
 		return notes;
 	}
@@ -143,11 +168,12 @@ public class NoteServiceImpl implements IGeneralNoteService {
 	 * (non-Javadoc)
 	 * 
 	 * @throws NoteReaderException
+	 * @throws IOException 
 	 * @see com.todo.noteservice.services.IGeneralNoteService#doUpdateNote()
 	 */
 	@Override
 	public void doUpdateNote(String userId, String noteId, String newTitle, String newDescription)
-			throws NoteReaderException {
+			throws NoteReaderException, IOException {
 		logger.debug(messages.get("123"));
 		int count = 0;
 		Optional<Note>[] noteOptional = Preconditions.checkNotNull(repo.findByAuthorId(userId), messages.get("112"));
@@ -158,7 +184,7 @@ public class NoteServiceImpl implements IGeneralNoteService {
 					noteOptional[i].get().setTitle(newTitle);
 				}
 				if (!newDescription.equals("")) {
-					noteOptional[i].get().setDescription(newDescription);
+					 noteOptional[i].get().setDescription(makeDescription(newDescription));
 				}
 				SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
 
@@ -250,6 +276,7 @@ public class NoteServiceImpl implements IGeneralNoteService {
 	 * @param noteId
 	 * @throws NoteReaderException
 	 */
+	@Override
 	public void doUnarchive(String userId, String noteId) throws NoteReaderException {
 		logger.debug(messages.get("130"));
 		int count = 0;
@@ -283,6 +310,7 @@ public class NoteServiceImpl implements IGeneralNoteService {
 	 * @param noteId
 	 * @throws NoteReaderException
 	 */
+	@Override
 	public void doPinned(String userId, String noteId) throws NoteReaderException {
 		logger.debug(messages.get("132"));
 		int count = 0;
@@ -308,7 +336,7 @@ public class NoteServiceImpl implements IGeneralNoteService {
 					noteOptional[i].get().setPinned("true");
 					repo.save(noteOptional[i].get());
 					noteRepositoryElastic.save(noteOptional[i].get());
-					
+
 				}
 			}
 		}
@@ -320,6 +348,7 @@ public class NoteServiceImpl implements IGeneralNoteService {
 	 * @param noteId
 	 * @throws NoteReaderException
 	 */
+	@Override
 	public void doUnPinned(String userId, String noteId) throws NoteReaderException {
 		logger.debug(messages.get("134"));
 		int count = 0;
@@ -353,6 +382,7 @@ public class NoteServiceImpl implements IGeneralNoteService {
 	 * @param noteLabel
 	 * @throws NoteReaderException
 	 */
+	@Override
 	public void addNoteToLabel(String userId, String labelName, NoteInLabelDTO noteLabel) throws NoteReaderException {
 		logger.debug("adding note to level process starts");
 		Preconditions.checkNotNull(labelName, messages.get("137"));
@@ -387,6 +417,7 @@ public class NoteServiceImpl implements IGeneralNoteService {
 	 * @param labelName
 	 * @throws NoteReaderException
 	 */
+	@Override
 	public void doSetLabel(String userId, String noteId, String labelName) throws NoteReaderException {
 		logger.debug("adding level process starts");
 		Preconditions.checkNotNull(labelName, messages.get("137"));
@@ -429,6 +460,7 @@ public class NoteServiceImpl implements IGeneralNoteService {
 	 * @param label
 	 * @throws NoteReaderException
 	 */
+	@Override
 	public void doMakeLabel(String userId, Label label) throws NoteReaderException {
 		logger.debug("making level process starts");
 		Preconditions.checkNotNull(label.getLabelName(), messages.get("137"));
@@ -447,6 +479,7 @@ public class NoteServiceImpl implements IGeneralNoteService {
 	 * @param labelName
 	 * @return
 	 */
+	@Override
 	public List<Note> doSearchNoteFromLabel(String userId, String labelName) {
 		logger.debug("seaching note from level process starts");
 		Preconditions.checkNotNull(repo.findByAuthorId(userId), messages.get("112"));
@@ -465,6 +498,7 @@ public class NoteServiceImpl implements IGeneralNoteService {
 	 * @param reminderTime
 	 * @throws ParseException
 	 */
+	@Override
 	public void doSetReminder(String userId, String noteId, String reminderTime) throws ParseException {
 		logger.debug("setting reminder process starts");
 		Optional<Note>[] noteOptional = Preconditions.checkNotNull(repo.findByAuthorId(userId), messages.get("112"));
@@ -486,6 +520,11 @@ public class NoteServiceImpl implements IGeneralNoteService {
 		}
 		logger.debug("setting reminder process ends");
 	}
+
+	/* (non-Javadoc)
+	 * @see com.todo.noteservice.services.IGeneralNoteService#doDeleteNoteFromTrash(java.lang.String, java.lang.String)
+	 */
+	@Override
 	public void doDeleteNoteFromTrash(String userId, String noteId) throws NoteReaderException {
 		logger.debug(messages.get("125"));
 		int count = 0;
@@ -506,5 +545,28 @@ public class NoteServiceImpl implements IGeneralNoteService {
 		}
 		logger.debug(messages.get("127"));
 	}
-	
+
+	public static Description makeDescription(String noteDescription) throws IOException {
+		Description desc = new Description();
+		List<Link> linkList = new ArrayList<>();
+		List<String> simpleList = new ArrayList<>();
+		String[] descriptionArray = noteDescription.split(" ");
+		for (int i = 0; i < descriptionArray.length; i++) {
+			if (descriptionArray[i].startsWith("http://") || descriptionArray[i].startsWith("https://")) {
+				Link link = new Link();
+				link.setLinkTitle(JsoupImpl.getTitle(descriptionArray[i]));
+				link.setLinkDomainName(JsoupImpl.getDomain(descriptionArray[i]));
+				link.setLinkImage(JsoupImpl.getImage(descriptionArray[i]));
+				System.out.println(link);
+				linkList.add(link);
+			} else if (!descriptionArray[i].equals("")
+					&& (!descriptionArray[i].startsWith("http://") || !descriptionArray[i].startsWith("https://"))) {
+				simpleList.add(descriptionArray[i]);
+			}
+		}
+		desc.setSimpleDescription(simpleList);
+		desc.setLinkDescription(linkList);
+		return desc;
+	}
+
 }
